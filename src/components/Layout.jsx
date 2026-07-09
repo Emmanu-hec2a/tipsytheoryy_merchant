@@ -1,0 +1,235 @@
+import React, { useState, useEffect } from 'react';
+import {
+  LayoutDashboard, ShoppingBag, Wine, List, Package,
+  Users, BarChart3, Wallet, Settings, LogOut, Bell,
+  Store, Menu, X, ChevronDown, Megaphone, BadgePercent,
+  CreditCard, Clock
+} from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { partner } from '../api';
+
+const SidebarItem = ({ icon: Icon, label, path, badge, active }) => (
+  <Link
+    to={path}
+    className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all mb-1 group ${
+      active
+        ? 'bg-primary-light text-primary font-bold shadow-sm'
+        : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+    }`}
+  >
+    <div className="flex items-center gap-3">
+      <Icon size={20} className={active ? 'text-primary' : 'group-hover:text-slate-900'} />
+      <span className="text-sm">{label}</span>
+    </div>
+    {badge > 0 && (
+      <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full">
+        {badge}
+      </span>
+    )}
+  </Link>
+);
+
+const Layout = ({ children }) => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [notifications, setNotifications] = useState([]);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchStats = async () => {
+        try {
+            const { data } = await partner.getDashboardStats();
+            setPendingCount(data.pending_orders || 0);
+
+            // Mock some notifications based on stats
+            const newNotifs = [];
+            if (data.pending_orders > 0) {
+                newNotifs.push({
+                    id: 1,
+                    title: 'New Orders Pending',
+                    desc: `You have ${data.pending_orders} new orders to process`,
+                    icon: ShoppingBag,
+                    time: 'Just now'
+                });
+            }
+            if (data.low_stock_count > 0) {
+                newNotifs.push({
+                    id: 2,
+                    title: 'Low Stock Alert',
+                    desc: `${data.low_stock_count} items are running low`,
+                    icon: Package,
+                    time: '10m ago'
+                });
+            }
+            setNotifications(newNotifs);
+        } catch (err) {
+            console.error('Failed to fetch stats for layout');
+        }
+    };
+    fetchStats();
+    const interval = setInterval(fetchStats, 60000); // Update every minute
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('access_token');
+    window.location.href = '/login';
+  };
+
+  const menuItems = [
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+    { icon: ShoppingBag, label: 'Orders', path: '/orders', badge: pendingCount },
+    { icon: Wine, label: 'Products', path: '/products' },
+    { icon: Package, label: 'Inventory', path: '/inventory' },
+    { icon: Megaphone, label: 'Marketing', path: '/marketing' },
+    { icon: BadgePercent, label: 'Promotions', path: '/promotions' },
+    { icon: Users, label: 'Customers', path: '/customers' },
+    { icon: BarChart3, label: 'Reports', path: '/reports' },
+    { icon: Wallet, label: 'Payouts', path: '/payouts' },
+    { icon: CreditCard, label: 'Billing', path: '/billing' },
+    { icon: Settings, label: 'Settings', path: '/settings' },
+  ];
+
+  return (
+    <div className="min-h-screen bg-slate-50 flex">
+      {/* Sidebar */}
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transition-transform lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="flex flex-col h-full p-4">
+          <div className="flex items-center gap-3 px-2 mb-10">
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+              <Wine size={24} className="text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-slate-900 leading-tight">TipsyTheoryy</h2>
+              <p className="text-[10px] text-slate-400 font-medium">Merchant Dashboard</p>
+            </div>
+          </div>
+
+          <nav className="flex-1 overflow-y-auto">
+            {menuItems.map((item) => (
+              <SidebarItem
+                key={item.path}
+                {...item}
+                active={location.pathname === item.path}
+              />
+            ))}
+          </nav>
+
+          <div className="mt-auto pt-6 border-t border-slate-100">
+            <Link to="/settings" className="bg-primary text-white p-4 rounded-2xl mb-6 relative overflow-hidden group block">
+               <div className="relative z-10 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center font-bold text-xs">TT</div>
+                    <div>
+                        <p className="text-xs font-bold truncate w-24">Store Profile</p>
+                        <p className="text-[10px] opacity-70 uppercase tracking-tighter">View Account</p>
+                    </div>
+                  </div>
+                  <ChevronDown size={16} />
+               </div>
+            </Link>
+
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 px-4 py-3 w-full text-red-500 hover:bg-red-50 rounded-xl transition-all"
+            >
+               <LogOut size={20} />
+               <span className="text-sm font-bold">Logout</span>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className={`flex-1 transition-all ${isSidebarOpen ? 'lg:ml-64' : ''}`}>
+        {/* Topbar */}
+        <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="lg:hidden text-slate-500">
+              <Menu size={24} />
+            </button>
+            <h1 className="text-xl font-bold text-slate-900 uppercase tracking-tight">{menuItems.find(m => m.path === location.pathname)?.label || 'Dashboard'}</h1>
+          </div>
+
+          <div className="flex items-center gap-4 relative">
+            <button
+                onClick={() => setIsNotifOpen(!isNotifOpen)}
+                className={`relative w-10 h-10 flex items-center justify-center rounded-xl transition-all ${isNotifOpen ? 'bg-primary text-white' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
+            >
+                <Bell size={20} />
+                {notifications.length > 0 && (
+                    <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-accent rounded-full border-2 border-white" />
+                )}
+            </button>
+
+            {/* Notification Dropdown */}
+            {isNotifOpen && (
+              <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="p-6 border-b border-slate-50 flex items-center justify-between">
+                    <h4 className="font-bold text-slate-900">Notifications</h4>
+                    <span className="text-[10px] font-bold text-primary bg-primary-light px-2 py-0.5 rounded-full uppercase">{notifications.length} New</span>
+                </div>
+                <div className="max-h-96 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                        <div className="p-10 text-center text-slate-400">
+                            <Bell className="mx-auto mb-3 opacity-20" size={32} />
+                            <p className="text-sm">No new notifications</p>
+                        </div>
+                    ) : (
+                        notifications.map(notif => (
+                            <div key={notif.id} className="p-5 border-b border-slate-50 hover:bg-slate-50 transition-all cursor-pointer">
+                                <div className="flex gap-4">
+                                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 shrink-0">
+                                        <notif.icon size={18} />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-900 mb-1">{notif.title}</p>
+                                        <p className="text-xs text-slate-500 leading-relaxed mb-2">{notif.desc}</p>
+                                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                            <Clock size={10} />
+                                            {notif.time}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+                <button className="w-full py-4 bg-slate-50 text-slate-500 text-xs font-bold hover:bg-slate-100 transition-all">Mark all as read</button>
+              </div>
+            )}
+
+            <div className="h-8 w-[1px] bg-slate-200" />
+
+            <Link to="/settings" className="flex items-center gap-3 pl-2 cursor-pointer group">
+                <div className="flex flex-col items-end hidden md:flex">
+                    <p className="text-sm font-bold text-slate-900">Tipsy Theoryy Store</p>
+                    <div className="flex items-center gap-1">
+                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                        <span className="text-[10px] text-slate-500">Online</span>
+                    </div>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold group-hover:scale-105 transition-all">
+                   <Store size={20} />
+                </div>
+                <ChevronDown size={16} className="text-slate-400" />
+            </Link>
+          </div>
+        </header>
+
+        <div className="p-6">
+          {children}
+        </div>
+      </main>
+
+      {/* Overlay to close notif dropdown */}
+      {isNotifOpen && (
+        <div className="fixed inset-0 z-20" onClick={() => setIsNotifOpen(false)} />
+      )}
+    </div>
+  );
+};
+
+export default Layout;
