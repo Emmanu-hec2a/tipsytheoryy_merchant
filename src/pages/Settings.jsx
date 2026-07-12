@@ -3,7 +3,7 @@ import {
   Store, CreditCard, Truck, Bell,
   Save, Phone, Mail, MapPin, Clock,
   ShieldCheck, AlertCircle, CheckCircle2,
-  Building2, Hash, UserCircle
+  Building2, Hash, UserCircle, Key, Lock
 } from 'lucide-react';
 import { partner } from '../api';
 import SoftGate from '../components/SoftGate';
@@ -47,20 +47,21 @@ const Settings = () => {
     bank_account_name: '',
     bank_account_number: '',
 
-    // PayHero (Direct customer payments)
-    payhero_username: '',
-    payhero_api_key: '',
-    payhero_account_number: '',
-
-    payment_provider: 'flutterwave',
-    flutterwave_enabled: true,
-    flutterwave_currency: 'KES',
+    // M-Pesa Daraja Credentials
+    mpesa_shortcode: '',
+    mpesa_consumer_key: '',
+    mpesa_consumer_secret: '',
+    mpesa_passkey: '',
+    mpesa_callback_url: '',
 
     plan: 'base',
 
     // Delivery
     delivery_fee: 200,
     delivery_radius_km: 7,
+    base_delivery_fee: 100,
+    base_distance_km: 2,
+    extra_distance_surcharge: 30,
 
     // Notifications (Frontend state, usually handled by push/fcm token)
     notifications_enabled: true,
@@ -77,9 +78,6 @@ const Settings = () => {
     setLoading(true);
     try {
       const { data } = await partner.getSettings();
-      // Note: Data includes both Store and some User fields if serializer allows
-      // or we might need a separate user info call.
-      // Based on StoreSerializer '__all__', we get most store fields.
       setFormData({
         ...formData,
         name: data.name || '',
@@ -89,24 +87,26 @@ const Settings = () => {
         longitude: data.longitude || 0,
         delivery_fee: data.delivery_fee || 200,
         delivery_radius_km: data.delivery_radius_km || 7,
+        base_delivery_fee: data.base_delivery_fee || 100,
+        base_distance_km: data.base_distance_km || 2,
+        extra_distance_surcharge: data.extra_distance_surcharge || 30,
         phone: data.phone || '',
         email: data.email || '',
         opening_time: data.opening_time?.substring(0, 5) || '09:00',
         closing_time: data.closing_time?.substring(0, 5) || '23:00',
         primary_color: data.primary_color || '#F97316',
 
-        // Payout fields (now flat in StoreSerializer)
         bank_name: data.bank_name || '',
         bank_account_name: data.bank_account_name || '',
         bank_account_number: data.bank_account_number || '',
 
-        // PayHero fields
-        payhero_username: data.payhero_username || '',
-        payhero_api_key: data.payhero_api_key || '',
-        payhero_account_number: data.payhero_account_number || '',
-        payment_provider: data.payment_provider || 'flutterwave',
-        flutterwave_enabled: data.flutterwave_enabled ?? true,
-        flutterwave_currency: data.flutterwave_currency || 'KES',
+        // M-Pesa fields
+        mpesa_shortcode: data.mpesa_shortcode || '',
+        mpesa_consumer_key: data.mpesa_consumer_key || '',
+        mpesa_consumer_secret: data.mpesa_consumer_secret || '',
+        mpesa_passkey: data.mpesa_passkey || '',
+        mpesa_callback_url: data.mpesa_callback_url || '',
+
         plan: data.plan || 'base'
       });
     } catch (err) {
@@ -144,8 +144,6 @@ const Settings = () => {
     setSaveLoading(true);
     setMessage({ type: '', text: '' });
     try {
-      // Backend StoreSettingsView.patch uses StoreSerializer
-      // We send the full formData; backend will ignore fields it doesn't recognize or we can filter
       await partner.updateSettings(formData);
       setMessage({ type: 'success', text: 'Settings updated successfully!' });
       setTimeout(() => setMessage({ type: '', text: '' }), 5000);
@@ -298,7 +296,7 @@ const Settings = () => {
                     </div>
                     <div>
                       <h4 className="font-bold text-slate-900">Payout Destination</h4>
-                      <p className="text-xs text-slate-500 leading-relaxed">Where you receive your settlements from TipsyTheoryy. Payments are processed every Monday.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Where you receive your settlements from TipsyTheoryy.</p>
                     </div>
                   </div>
 
@@ -330,72 +328,80 @@ const Settings = () => {
                   </div>
                 </div>
 
-                {/* Flutterwave Payments Section */}
+                {/* M-Pesa Daraja Section */}
                 <div className="space-y-6 pt-6 border-t border-slate-50">
-                  <div className="bg-primary/5 p-6 rounded-2xl border border-primary/10 flex items-start gap-4">
+                  <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100 flex items-start gap-4">
                     <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center shrink-0">
-                      <ShieldCheck size={24} className="text-primary" />
+                      <ShieldCheck size={24} className="text-emerald-600" />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <h4 className="font-bold text-slate-900">Platform Payments</h4>
-                        <span className="bg-primary text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter">Flutterwave</span>
+                        <h4 className="font-bold text-slate-900">M-Pesa Daraja Integration</h4>
+                        <span className="bg-emerald-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter">Direct STK</span>
                       </div>
-                      <p className="text-xs text-slate-500 leading-relaxed">We handle the payment setup for you. Your store can start accepting customer payments without managing APIs or gateway credentials.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Configure your Safaricom Daraja API credentials to receive payments directly to your Shortcode or Till Number.</p>
                     </div>
                   </div>
 
-                  <SoftGate isGated={formData.plan === 'base'} featureName="Platform Payments" planRequired="Pro">
-                    <div className="space-y-4 px-2">
-                      <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                          <div>
-                            <p className="text-sm font-bold text-slate-900">No technical setup required</p>
-                            <p className="text-xs text-slate-500 mt-1">Payments will be collected through our Flutterwave-powered flow for your store.</p>
-                          </div>
-                          <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-wider">Platform managed</span>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <label className="rounded-2xl border border-slate-100 p-4 flex flex-col gap-2">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Payment mode</span>
-                          <select
-                            value={formData.payment_provider}
-                            onChange={(e) => setFormData({ ...formData, payment_provider: e.target.value })}
-                            className="input-field py-2.5"
-                          >
-                            <option value="flutterwave">Flutterwave (recommended)</option>
-                            <option value="manual">Manual / other</option>
-                          </select>
-                        </label>
-                        <label className="rounded-2xl border border-slate-100 p-4 flex flex-col gap-2">
-                          <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Currency</span>
-                          <select
-                            value={formData.flutterwave_currency}
-                            onChange={(e) => setFormData({ ...formData, flutterwave_currency: e.target.value })}
-                            className="input-field py-2.5"
-                          >
-                            <option value="KES">KES</option>
-                            <option value="USD">USD</option>
-                          </select>
-                        </label>
-                      </div>
-
-                      <div className="rounded-2xl border border-slate-100 p-4 flex items-center justify-between">
+                  <SoftGate isGated={formData.plan === 'base'} featureName="Direct M-Pesa Integration" planRequired="Pro">
+                    <div className="space-y-6 px-2">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                          <p className="text-sm font-bold text-slate-900">Enable platform payments</p>
-                          <p className="text-xs text-slate-500 mt-1">Your store will use the platform-managed Flutterwave flow.</p>
+                          <label className="block text-sm font-bold text-slate-700 mb-2">Shortcode / Till</label>
+                          <div className="relative">
+                            <Hash className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                            <input
+                              type="text" className="input-field pl-12" placeholder="e.g. 174379"
+                              value={formData.mpesa_shortcode} onChange={(e) => setFormData({...formData, mpesa_shortcode: e.target.value})}
+                            />
+                          </div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => setFormData({ ...formData, flutterwave_enabled: !formData.flutterwave_enabled })}
-                          className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider transition-all ${
-                            formData.flutterwave_enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'
-                          }`}
-                        >
-                          {formData.flutterwave_enabled ? 'Enabled' : 'Disabled'}
-                        </button>
+                        <div>
+                          <label className="block text-sm font-bold text-slate-700 mb-2">LNM Passkey</label>
+                          <div className="relative">
+                            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                            <input
+                              type="password" className="input-field pl-12" placeholder="STK Push Passkey"
+                              value={formData.mpesa_passkey} onChange={(e) => setFormData({...formData, mpesa_passkey: e.target.value})}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Consumer Key</label>
+                        <div className="relative">
+                          <Key className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                          <input
+                            type="password" className="input-field pl-12" placeholder="Daraja Consumer Key"
+                            value={formData.mpesa_consumer_key} onChange={(e) => setFormData({...formData, mpesa_consumer_key: e.target.value})}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Consumer Secret</label>
+                        <div className="relative">
+                          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                          <input
+                            type="password" className="input-field pl-12" placeholder="Daraja Consumer Secret"
+                            value={formData.mpesa_consumer_secret} onChange={(e) => setFormData({...formData, mpesa_consumer_secret: e.target.value})}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Callback URL</label>
+                        <input
+                          type="url" className="input-field" placeholder="https://your-domain.com/mpesa/callback/"
+                          value={formData.mpesa_callback_url} onChange={(e) => setFormData({...formData, mpesa_callback_url: e.target.value})}
+                        />
+                        <p className="text-[10px] text-slate-400 mt-2 italic">Leave empty to use platform default.</p>
+                      </div>
+
+                      <div className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100 flex gap-3">
+                         <AlertCircle size={16} className="text-emerald-600 shrink-0 mt-0.5" />
+                         <p className="text-[11px] text-emerald-800 font-medium">Your credentials are encrypted for security. Once saved, they are protected by AES-256 encryption.</p>
                       </div>
                     </div>
                   </SoftGate>
@@ -406,9 +412,10 @@ const Settings = () => {
             {/* Delivery Settings Tab */}
             {activeTab === 'Delivery Settings' && (
               <div className="space-y-8">
+                {/* Legacy / Simple Fee Section */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-2">Default Delivery Fee (KSh)</label>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Legacy Delivery Fee (KSh)</label>
                     <div className="relative">
                       <Truck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                       <input
@@ -426,6 +433,52 @@ const Settings = () => {
                         value={formData.delivery_radius_km} onChange={(e) => setFormData({...formData, delivery_radius_km: e.target.value})}
                       />
                     </div>
+                  </div>
+                </div>
+
+                {/* Dynamic Distance Based Pricing */}
+                <div className="space-y-6 pt-6 border-t border-slate-50">
+                  <div className="bg-primary/5 p-6 rounded-2xl border border-primary/10 flex items-start gap-4">
+                    <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center shrink-0">
+                      <Truck size={24} className="text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-bold text-slate-900">Dynamic Distance-Based Pricing</h4>
+                      <p className="text-xs text-slate-500 leading-relaxed">Calculate fees based on the customer's distance from your shop. This ensures fair pricing for far-away deliveries.</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">Base Fee (KSh)</label>
+                      <input
+                        type="number" className="input-field"
+                        value={formData.base_delivery_fee} onChange={(e) => setFormData({...formData, base_delivery_fee: e.target.value})}
+                      />
+                      <p className="text-[10px] text-slate-400 mt-2">Starting fee for every order.</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">Base Distance (km)</label>
+                      <input
+                        type="number" className="input-field"
+                        value={formData.base_distance_km} onChange={(e) => setFormData({...formData, base_distance_km: e.target.value})}
+                      />
+                      <p className="text-[10px] text-slate-400 mt-2">Distance covered by base fee.</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">Surcharge / km</label>
+                      <input
+                        type="number" className="input-field"
+                        value={formData.extra_distance_surcharge} onChange={(e) => setFormData({...formData, extra_distance_surcharge: e.target.value})}
+                      />
+                      <p className="text-[10px] text-slate-400 mt-2">Extra charge per km beyond base.</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 italic">
+                    <p className="text-[11px] text-slate-500 font-medium">
+                      Example: If Base is KSh {formData.base_delivery_fee} for {formData.base_distance_km}km and Surcharge is KSh {formData.extra_distance_surcharge}/km, a 5km delivery will cost KSh {Number(formData.base_delivery_fee) + (5 - Number(formData.base_distance_km)) * Number(formData.extra_distance_surcharge)}.
+                    </p>
                   </div>
                 </div>
 

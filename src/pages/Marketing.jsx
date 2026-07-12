@@ -31,7 +31,9 @@ const Marketing = () => {
     store_views: '0',
     menu_clicks: '0',
     customer_reach: '0',
-    brand_score: 'B'
+    brand_score: 'B',
+    recent_blasts: [],
+    can_blast: true
   });
 
   useEffect(() => {
@@ -61,8 +63,29 @@ const Marketing = () => {
       await partner.updateSettings({ tagline });
       setMessage({ type: 'success', text: 'Brand tagline updated!' });
       setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+      fetchMarketingData();
     } catch (err) {
       setMessage({ type: 'error', text: 'Update failed.' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleUpdateCover = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('cover_image', file);
+
+    setActionLoading(true);
+    try {
+      await partner.updateSettings(formData);
+      setMessage({ type: 'success', text: 'Cover image updated!' });
+      setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+      fetchMarketingData();
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Upload failed.' });
     } finally {
       setActionLoading(false);
     }
@@ -73,11 +96,13 @@ const Marketing = () => {
     setActionLoading(true);
     try {
       await partner.sendMarketingBlast({ message: blastText });
-      setMessage({ type: 'success', text: 'Marketing blast sent to customers!' });
+      setMessage({ type: 'success', text: 'Marketing blast initiated! Customers will receive it shortly.' });
       setBlastText('');
       setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+      fetchMarketingData(); // Refresh stats and lock state
     } catch (err) {
-      setMessage({ type: 'error', text: 'Failed to send blast.' });
+      const errorMsg = err.response?.data?.error || 'Failed to send blast.';
+      setMessage({ type: 'error', text: errorMsg });
     } finally {
       setActionLoading(false);
     }
@@ -130,7 +155,8 @@ const Marketing = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                   <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-4 group cursor-pointer hover:border-primary/20 transition-all">
+                   <label className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-4 group cursor-pointer hover:border-primary/20 transition-all">
+                      <input type="file" className="hidden" accept="image/*" onChange={handleUpdateCover} />
                       <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors shadow-sm">
                          <ImageIcon size={20} />
                       </div>
@@ -138,7 +164,7 @@ const Marketing = () => {
                          <p className="text-xs font-bold text-slate-900">Update Cover Image</p>
                          <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Recommended: 1200x400px</p>
                       </div>
-                   </div>
+                   </label>
                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-4 group cursor-pointer hover:border-primary/20 transition-all">
                       <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors shadow-sm">
                          <Crown size={20} />
@@ -176,30 +202,44 @@ const Marketing = () => {
                   <div className="flex items-center justify-between">
                      <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase">
                         <CheckCircle2 size={12} className="text-green-500" />
-                        Targeting {store?.follower_count || 0} customers
+                        Targeting {stats.customer_reach} customers
                      </div>
                      <button
                         onClick={handleSendBlast}
-                        disabled={actionLoading || !blastText.trim()}
+                        disabled={actionLoading || !blastText.trim() || !stats.can_blast}
                         className="px-8 py-3 bg-primary text-white rounded-2xl font-bold text-[10px] uppercase tracking-widest flex items-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
                      >
-                        <Send size={14} /> Send Blast
+                        <Send size={14} /> {stats.can_blast ? 'Send Blast' : 'Cooling Lock'}
                      </button>
                   </div>
+                  {!stats.can_blast && (
+                    <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest flex items-center gap-1">
+                      <Clock size={10} /> Cooling lock active. 1 blast allowed per hour.
+                    </p>
+                  )}
                </div>
 
                <div className="mt-8 pt-6 border-t border-slate-50">
                   <h4 className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Recent Blasts</h4>
                   <div className="space-y-3">
-                     {[1, 2].map(i => (
-                        <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
+                     {stats.recent_blasts.length > 0 ? (
+                       stats.recent_blasts.map(blast => (
+                        <div key={blast.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
                            <div className="flex items-center gap-3">
                               <History size={14} className="text-slate-300" />
-                              <span className="text-xs text-slate-600 font-medium truncate w-48">New stock alert: Johnnie Walker...</span>
+                              <span className="text-xs text-slate-600 font-medium truncate w-48">{blast.message}</span>
                            </div>
-                           <span className="text-[9px] font-bold text-slate-400 uppercase">2 days ago</span>
+                           <div className="flex items-center gap-4">
+                              <span className="text-[8px] font-black text-primary uppercase">{blast.target_count} reach</span>
+                              <span className="text-[9px] font-bold text-slate-400 uppercase">
+                                {new Date(blast.created_at).toLocaleDateString()}
+                              </span>
+                           </div>
                         </div>
-                     ))}
+                       ))
+                     ) : (
+                       <div className="text-center py-4 text-[10px] text-slate-400 font-bold uppercase tracking-widest">No recent blasts</div>
+                     )}
                   </div>
                </div>
             </div>
@@ -222,16 +262,20 @@ const Marketing = () => {
               {/* App Content */}
               <div className="p-4 space-y-4">
                  <div className="h-40 w-full bg-slate-200 rounded-[2rem] relative overflow-hidden">
-                    <div className="absolute inset-0 flex items-center justify-center text-slate-400">
-                       <ImageIcon size={32} />
-                    </div>
-                    {store?.is_pro && (
+                    {store?.cover_image ? (
+                      <img src={store.cover_image} alt="Cover" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center text-slate-400">
+                        <ImageIcon size={32} />
+                      </div>
+                    )}
+                    {store?.plan === 'pro' && (
                        <div className="absolute top-4 left-4 bg-orange-500 text-white px-2 py-0.5 rounded-full text-[8px] font-black uppercase">PRO</div>
                     )}
                  </div>
 
                  <div className="px-2 space-y-1">
-                    <h5 className="text-lg font-black text-slate-900 truncate">{store?.name || 'Store Name'}</h5>
+                    <h5 className="text-lg font-black text-slate-900 truncate">{store?.shop_name || store?.name || 'Store Name'}</h5>
                     <p className="text-[10px] text-slate-500 font-medium leading-tight italic">{tagline || 'Store tagline goes here...'}</p>
                  </div>
 

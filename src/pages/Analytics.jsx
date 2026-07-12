@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   BarChart3, TrendingUp, Users, ShoppingBag,
   Calendar, Download, ArrowUpRight, ArrowDownRight,
-  ChevronDown
+  ChevronDown, CheckCircle2
 } from 'lucide-react';
 import {
   Chart as ChartJS,
@@ -87,11 +87,10 @@ const Analytics = () => {
   };
 
   // Status distribution requires backend support for counts by status.
-  // For now, we'll keep a clean mock or derive if possible.
   const donutData = {
     labels: ['Completed', 'Pending', 'Cancelled'],
     datasets: [{
-      data: [summary.total_orders, 0, 0], // Derived roughly for UI
+      data: [summary.completed_orders || 0, summary.pending_orders || 0, summary.cancelled_orders || 0],
       backgroundColor: ['#10B981', '#F97316', '#EF4444'],
       borderWidth: 0,
       cutout: '75%',
@@ -147,10 +146,10 @@ const Analytics = () => {
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Total Revenue', value: `KSh ${summary.total_revenue.toLocaleString()}`, trend: 0, icon: TrendingUp, color: 'text-green-600', bg: 'bg-green-50' },
+          { label: 'Total Paid Revenue', value: `KSh ${summary.total_revenue.toLocaleString()}`, trend: 0, icon: TrendingUp, color: 'text-green-600', bg: 'bg-green-50' },
           { label: 'Total Orders', value: summary.total_orders, trend: 0, icon: ShoppingBag, color: 'text-primary', bg: 'bg-primary-light' },
-          { label: 'Avg Order Value', value: `KSh ${summary.total_orders > 0 ? (summary.total_revenue / summary.total_orders).toFixed(0) : 0}`, trend: 0, icon: BarChart3, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { label: 'Customer Satisfaction', value: '4.9/5', trend: 0, icon: Users, color: 'text-orange-600', bg: 'bg-orange-50' },
+          { label: 'Completed Deliveries', value: summary.completed_orders || 0, trend: 0, icon: CheckCircle2, color: 'text-blue-600', bg: 'bg-blue-50' },
+          { label: 'Avg Order Value', value: `KSh ${summary.total_orders > 0 ? (summary.total_revenue / summary.total_orders).toFixed(0) : 0}`, trend: 0, icon: BarChart3, color: 'text-orange-600', bg: 'bg-orange-50' },
         ].map((stat, i) => (
           <div key={i} className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm">
             <div className="flex items-center gap-3 mb-2">

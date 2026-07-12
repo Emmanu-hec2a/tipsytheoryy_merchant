@@ -33,12 +33,21 @@ const PromotionModal = ({ isOpen, onClose, onSave }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    // Format end_date to end of day to prevent immediate expiry
+    const formattedData = {
+      ...formData,
+      end_date: `${formData.end_date}T23:59:59`
+    };
+
     try {
-      await partner.createPromotion(formData);
+      await partner.createPromotion(formattedData);
       onSave();
       onClose();
     } catch (err) {
-      console.error('Failed to save promotion');
+      const errorMsg = err.response?.data ? JSON.stringify(err.response.data) : 'Failed to save promotion';
+      alert(`Error: ${errorMsg}`);
+      console.error('Failed to save promotion', err.response?.data);
     } finally {
       setLoading(false);
     }
