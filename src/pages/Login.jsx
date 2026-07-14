@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock, Wine } from 'lucide-react';
 import { auth } from '../api';
+import LegalModal from '../components/LegalModal';
+import { legalTexts } from '../constants/legalTexts';
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '', rememberMe: false });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Legal Modal State
+  const [legalModal, setLegalModal] = useState({ isOpen: false, title: '', content: '' });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,8 +31,23 @@ const Login = () => {
     }
   };
 
+  const openLegal = (type) => {
+    if (type === 'privacy') {
+      setLegalModal({ isOpen: true, title: 'Privacy Policy', content: legalTexts.privacyPolicy });
+    } else {
+      setLegalModal({ isOpen: true, title: 'Terms of Service', content: legalTexts.merchantTerms });
+    }
+  };
+
   return (
     <div className="min-h-screen flex bg-white">
+      <LegalModal
+        isOpen={legalModal.isOpen}
+        onClose={() => setLegalModal({ ...legalModal, isOpen: false })}
+        title={legalModal.title}
+        content={legalModal.content}
+      />
+
       {/* Left Side - Image/Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden items-center justify-center p-12">
         <div className="absolute top-0 left-0 w-full h-full opacity-10">
@@ -137,10 +157,10 @@ const Login = () => {
             </a>
           </p>
 
-          <div className="mt-20 flex justify-center gap-6 text-xs text-slate-400">
-             <span>TipsyTheoryy © 2026</span>
-             <a href="#" className="hover:text-slate-600">Privacy Policy</a>
-             <a href="#" className="hover:text-slate-600">Terms of Service</a>
+          <div className="mt-20 flex justify-center gap-6 text-xs text-slate-400 font-medium uppercase tracking-widest">
+             <span className="opacity-50">TipsyTheoryy © 2026</span>
+             <button onClick={() => openLegal('privacy')} className="hover:text-primary transition-colors">Privacy Policy</button>
+             <button onClick={() => openLegal('terms')} className="hover:text-primary transition-colors">Terms of Service</button>
           </div>
         </div>
       </div>

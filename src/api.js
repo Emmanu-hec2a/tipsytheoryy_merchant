@@ -57,7 +57,7 @@ export const partner = {
   getSettings: () => api.get('partner/settings/'),
   updateSettings: (data) => api.patch('partner/settings/', data),
   getBillingHistory: () => api.get('partner/billing/history/'),
-  paySubscription: () => api.post('partner/billing/pay-now/'),
+  paySubscription: (data) => api.post('partner/billing/pay-now/', data),
   sendMarketingBlast: (data) => api.post('partner/marketing/blast/', data),
   getMarketingStats: () => api.get('partner/marketing/stats/'),
 };

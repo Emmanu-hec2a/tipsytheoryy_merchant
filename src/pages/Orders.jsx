@@ -12,14 +12,14 @@ import { partner } from '../api';
 const FilterTab = ({ label, active, onClick, count }) => (
   <button
     onClick={onClick}
-    className={`px-6 py-4 text-sm font-bold transition-all relative whitespace-nowrap ${
+    className={`px-4 py-3 text-xs font-bold transition-all relative whitespace-nowrap ${
       active ? 'text-primary' : 'text-slate-400 hover:text-slate-600'
     }`}
   >
     <div className="flex items-center gap-2">
       {label}
       {count !== undefined && count > 0 && (
-        <span className={`px-2 py-0.5 rounded-full text-[10px] ${
+        <span className={`px-1.5 py-0.5 rounded-full text-[9px] ${
           active ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500'
         }`}>
           {count}
@@ -31,90 +31,6 @@ const FilterTab = ({ label, active, onClick, count }) => (
     )}
   </button>
 );
-
-const RiderAssignmentModal = ({ isOpen, onClose, onAssign, orderId }) => {
-  const [riders, setRiders] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchNearbyRiders();
-    }
-  }, [isOpen]);
-
-  const fetchNearbyRiders = async () => {
-    setLoading(true);
-    try {
-      const { data } = await partner.getNearbyRiders();
-      setRiders(data);
-    } catch (err) {
-      console.error('Failed to fetch nearby riders');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-          <div>
-            <h3 className="text-xl font-bold text-slate-900">Assign Nearby Rider</h3>
-            <p className="text-sm text-slate-500 font-medium">Available riders in your delivery zone</p>
-          </div>
-          <button onClick={onClose} className="p-2 hover:bg-slate-50 rounded-xl transition-all">
-            <X size={20} className="text-slate-400" />
-          </button>
-        </div>
-
-        <div className="p-6 max-h-[400px] overflow-y-auto">
-          {loading ? (
-            <div className="py-12 text-center text-slate-400 font-medium">Scanning for riders...</div>
-          ) : riders.length === 0 ? (
-            <div className="py-12 text-center space-y-3">
-              <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto">
-                <Navigation2 size={24} className="text-slate-300" />
-              </div>
-              <p className="text-slate-400 font-medium">No available riders found nearby.</p>
-              <p className="text-xs text-slate-300">Try increasing your delivery radius in settings.</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {riders.map(rider => (
-                <button
-                  key={rider.id}
-                  onClick={() => onAssign(rider.id)}
-                  className="w-full p-4 flex items-center justify-between border border-slate-100 rounded-2xl hover:border-primary/30 hover:bg-primary/5 transition-all group"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center text-primary group-hover:bg-white transition-all">
-                      <Motorbike size={24} />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-bold text-slate-900">{rider.username}</p>
-                      <div className="flex items-center gap-3 mt-1">
-                        <span className="flex items-center gap-1 text-[10px] font-bold text-amber-500">
-                          <Star size={12} fill="currentColor" /> {rider.avg_rating}
-                        </span>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                          {rider.distance_km} KM AWAY
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <ChevronRight size={18} className="text-slate-300 group-hover:text-primary transition-all" />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const OrderDetailSidebar = ({ orderId, onClose, onUpdate }) => {
   const [order, setOrder] = useState(null);
@@ -154,7 +70,7 @@ const OrderDetailSidebar = ({ orderId, onClose, onUpdate }) => {
   };
 
   const handlePrintInvoice = () => {
-    const baseUrl = 'http://localhost:8000/api/v1/';
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1/';
     const token = localStorage.getItem('access_token');
     window.open(`${baseUrl}partner/orders/${orderId}/invoice/?token=${token}`, '_blank');
   };
@@ -176,28 +92,27 @@ const OrderDetailSidebar = ({ orderId, onClose, onUpdate }) => {
     <>
       <div className="fixed inset-0 z-[60] flex justify-end">
         <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
-        <div className="relative w-full max-w-xl bg-white h-full shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-300">
-          <div className="p-6 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white/80 backdrop-blur-md z-10">
+        <div className="relative w-full max-w-lg bg-white h-full shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-300 no-scrollbar">
+          <div className="p-5 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white/80 backdrop-blur-md z-10">
             <div>
-              <h3 className="text-xl font-bold text-slate-900">Order Details</h3>
-              <p className="text-sm text-slate-500 font-medium">#{order?.order_number || '...'}</p>
+              <h3 className="text-lg font-bold text-slate-900">Order Details</h3>
+              <p className="text-xs text-slate-500 font-medium">#{order?.order_number || '...'}</p>
             </div>
-            <button onClick={onClose} className="p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-slate-900 transition-all">
-              <X size={24} />
+            <button onClick={onClose} className="p-1.5 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-slate-900 transition-all">
+              <X size={20} />
             </button>
           </div>
 
           {loading ? (
-            <div className="p-8 text-center text-slate-400 font-medium animate-pulse">Loading order info...</div>
+            <div className="p-6 text-center text-slate-400 text-sm font-medium animate-pulse">Loading order info...</div>
           ) : !order ? (
-            <div className="p-8 text-center text-red-500 font-bold">Failed to load order.</div>
+            <div className="p-6 text-center text-red-500 font-bold text-sm">Failed to load order.</div>
           ) : (
-            <div className="p-8 space-y-8 pb-32">
-              {/* Status & Summary */}
-              <div className="flex items-center justify-between p-6 bg-slate-50 rounded-3xl border border-slate-100">
+            <div className="p-6 space-y-6 pb-32">
+              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
                 <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Current Status</p>
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Status</p>
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
                     order.status === 'delivered' ? 'bg-green-100 text-green-700' :
                     order.status === 'pending' ? 'bg-orange-100 text-orange-700' :
                     'bg-blue-100 text-blue-700'
@@ -206,61 +121,79 @@ const OrderDetailSidebar = ({ orderId, onClose, onUpdate }) => {
                   </span>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Amount</p>
-                  <p className="text-2xl font-extrabold text-primary">KES {parseFloat(order.total).toLocaleString()}</p>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Total</p>
+                  <p className="text-xl font-extrabold text-primary">KES {parseFloat(order.total).toLocaleString()}</p>
                 </div>
               </div>
 
-              {/* Rider Info (If Assigned) */}
               {order.rider_name && (
-                <section className="bg-primary/5 p-6 rounded-3xl border border-primary/10">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="p-2 bg-primary rounded-xl text-white">
-                      <Motorbike size={16} />
+                <section className="bg-primary/5 p-4 rounded-2xl border border-primary/10">
+                  <div className="flex items-center gap-2.5 mb-1.5">
+                    <div className="p-1.5 bg-primary rounded-lg text-white">
+                      <Motorbike size={14} />
                     </div>
-                    <h4 className="text-xs font-bold text-primary uppercase tracking-widest">Assigned Rider</h4>
+                    <h4 className="text-[10px] font-bold text-primary uppercase tracking-widest">Assigned Rider</h4>
                   </div>
-                  <p className="text-sm font-bold text-slate-900 ml-10">{order.rider_name}</p>
+                  <p className="text-xs font-bold text-slate-900 ml-8">{order.rider_name}</p>
                 </section>
               )}
 
-              {/* Customer Info */}
               <section>
-                <div className="flex items-center gap-2 mb-4">
-                  <User size={18} className="text-slate-400" />
-                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest">Customer Information</h4>
+                <div className="flex items-center gap-2 mb-3">
+                  <User size={16} className="text-slate-400" />
+                  <h4 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">Customer Information</h4>
                 </div>
-                <div className="space-y-4 bg-white border border-slate-100 p-6 rounded-3xl shadow-sm">
+                <div className="space-y-3 bg-white border border-slate-100 p-4 rounded-2xl shadow-sm">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-slate-500 font-medium">Name</span>
-                    <span className="text-sm text-slate-900 font-bold">{order.customer_name}</span>
+                    <span className="text-xs text-slate-500 font-medium">Name</span>
+                    <span className="text-xs text-slate-900 font-bold">{order.customer_name}</span>
                   </div>
                   <div className="flex justify-between items-start gap-4">
-                    <span className="text-sm text-slate-500 font-medium whitespace-nowrap">Delivery Address</span>
-                    <span className="text-sm text-slate-900 font-bold text-right leading-relaxed">{order.address_string || 'Not specified'}</span>
+                    <span className="text-xs text-slate-500 font-medium whitespace-nowrap">Address</span>
+                    <span className="text-xs text-slate-900 font-bold text-right leading-relaxed">{order.address_string || 'Not specified'}</span>
                   </div>
                 </div>
               </section>
 
-              {/* Items */}
+              {order.verification_image_url && (
+                <section>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Eye size={16} className="text-slate-400" />
+                    <h4 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">Midnight Mirror Verification</h4>
+                  </div>
+                  <div className="bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 shadow-lg relative group">
+                    <img
+                      src={`${import.meta.env.VITE_API_BASE_URL.replace('/api/v1', '')}${order.verification_image_url}`}
+                      alt="Verification"
+                      className="w-full aspect-video object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent pointer-events-none" />
+                    <div className="absolute bottom-3 left-3 flex items-center gap-2">
+                       <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                       <span className="text-[8px] font-black text-white uppercase tracking-widest">AES-256 SECURED</span>
+                    </div>
+                  </div>
+                </section>
+              )}
+
               <section>
-                <div className="flex items-center gap-2 mb-4">
-                  <Package size={18} className="text-slate-400" />
-                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest">Order Items</h4>
+                <div className="flex items-center gap-2 mb-3">
+                  <Package size={16} className="text-slate-400" />
+                  <h4 className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">Order Items</h4>
                 </div>
-                <div className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-sm">
+                <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
                   {order.items?.map((item, i) => (
-                    <div key={i} className="p-4 flex items-center justify-between border-b last:border-0 border-slate-50">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 font-bold text-xs uppercase">
+                    <div key={i} className="p-3 flex items-center justify-between border-b last:border-0 border-slate-50">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-slate-50 rounded-lg flex items-center justify-center text-slate-400 font-bold text-[10px] uppercase">
                           {item.product_name?.charAt(0)}
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-slate-900">{item.product_name}</p>
-                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Qty: {item.quantity}</p>
+                          <p className="text-xs font-bold text-slate-900">{item.product_name}</p>
+                          <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Qty: {item.quantity}</p>
                         </div>
                       </div>
-                      <p className="text-sm font-bold text-primary">KES {parseFloat(item.subtotal).toLocaleString()}</p>
+                      <p className="text-xs font-bold text-primary">KES {parseFloat(item.subtotal).toLocaleString()}</p>
                     </div>
                   ))}
                 </div>
@@ -268,73 +201,37 @@ const OrderDetailSidebar = ({ orderId, onClose, onUpdate }) => {
             </div>
           )}
 
-          {/* Persistent Action Footer */}
           {!loading && order && (
-            <div className="absolute bottom-0 left-0 w-full p-6 bg-white/80 backdrop-blur-xl border-t border-slate-100 flex flex-col gap-3 z-20">
-              <div className="flex gap-4">
+            <div className="absolute bottom-0 left-0 w-full p-4 bg-white/80 backdrop-blur-xl border-t border-slate-100 flex flex-col gap-2 z-20">
+              <div className="flex gap-2">
                 {order.status === 'pending' && (
                   <button
                     onClick={() => handleUpdateStatus('confirmed')}
                     disabled={updating}
-                    className="flex-1 py-4 bg-primary text-white rounded-2xl font-bold text-sm uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                    className="flex-1 py-3 bg-primary text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
                   >
-                    <CheckCircle2 size={18} />
-                    Confirm Order
+                    Confirm
                   </button>
                 )}
-
-                {order.status === 'confirmed' && (
-                   <button
-                    onClick={() => handleUpdateStatus('processing')}
-                    disabled={updating}
-                    className="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold text-sm uppercase tracking-widest shadow-xl shadow-blue-600/20 hover:scale-[1.02] active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-                   >
-                     <RefreshCw size={18} />
-                     Start Preparing
-                   </button>
-                )}
-
                 {['confirmed', 'processing'].includes(order.status) && (
                   <button
                     onClick={() => setIsAssigning(true)}
-                    className="flex-1 py-4 bg-orange-500 text-white rounded-2xl font-bold text-sm uppercase tracking-widest shadow-xl shadow-orange-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                    className="flex-1 py-3 bg-orange-500 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-orange-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
                   >
-                    <Motorbike size={18} />
                     Assign Rider
                   </button>
                 )}
               </div>
-
-              <div className="flex gap-4">
-                <button
-                  onClick={handlePrintInvoice}
-                  className="flex-1 py-3 bg-white border border-slate-200 text-slate-600 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
-                >
-                  <FileText size={16} />
-                  Print Invoice
-                </button>
+              <div className="flex gap-2">
+                <button onClick={handlePrintInvoice} className="flex-1 py-2.5 bg-slate-50 text-slate-600 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-slate-100 transition-all">Invoice</button>
                 {order.status === 'pending' && (
-                  <button
-                    onClick={() => handleUpdateStatus('cancelled')}
-                    disabled={updating}
-                    className="flex-1 py-3 bg-red-50 text-red-600 rounded-2xl font-bold text-xs uppercase tracking-widest hover:bg-red-100 transition-all flex items-center justify-center gap-2"
-                  >
-                    <X size={16} />
-                    Reject
-                  </button>
+                  <button onClick={() => handleUpdateStatus('cancelled')} className="flex-1 py-2.5 bg-red-50 text-red-600 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-red-100 transition-all">Reject</button>
                 )}
               </div>
             </div>
           )}
         </div>
       </div>
-
-      <RiderAssignmentModal
-        isOpen={isAssigning}
-        onClose={() => setIsAssigning(false)}
-        onAssign={handleAssignRider}
-        orderId={orderId}
-      />
     </>
   );
 };
@@ -372,36 +269,30 @@ const Orders = () => {
   );
 
   return (
-    <div className="space-y-6">
-      {/* Header & Actions */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
           <input
             type="text"
-            placeholder="Search by Order ID, Customer Name..."
-            className="w-full bg-white border border-slate-200 rounded-2xl py-3 pl-12 pr-4 text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            placeholder="Search Order ID, Customer..."
+            className="w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-11 pr-4 text-xs font-medium focus:ring-1 focus:ring-primary focus:border-primary transition-all outline-none"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-
-        <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all shadow-sm">
-            <Calendar size={18} />
-            Today
+        <div className="flex items-center gap-2">
+          <button className="flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-600 font-bold text-xs hover:bg-slate-50 transition-all shadow-sm">
+            <Calendar size={16} /> Today
           </button>
-          <button className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all shadow-sm">
-            <Download size={18} />
-            Export
+          <button className="flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 rounded-xl text-slate-600 font-bold text-xs hover:bg-slate-50 transition-all shadow-sm">
+            <Download size={16} /> Export
           </button>
         </div>
       </div>
 
-      {/* Main Content Card */}
-      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden min-h-[600px] flex flex-col">
-        {/* Tabs */}
-        <div className="flex border-b border-slate-100 px-4 overflow-x-auto scrollbar-hide">
+      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+        <div className="flex border-b border-slate-100 px-2 overflow-x-auto no-scrollbar">
           {tabs.map(tab => (
             <FilterTab
               key={tab}
@@ -413,43 +304,40 @@ const Orders = () => {
           ))}
         </div>
 
-        {/* Table */}
         <div className="overflow-x-auto flex-1">
           <table className="w-full text-left">
-            <thead className="bg-slate-50 text-[10px] uppercase font-bold text-slate-400 tracking-widest">
+            <thead className="bg-slate-50 text-[8px] uppercase font-bold text-slate-400 tracking-widest">
               <tr>
-                <th className="px-6 py-5">Order ID</th>
-                <th className="px-6 py-5">Customer Name</th>
-                <th className="px-6 py-5">Order Date</th>
-                <th className="px-6 py-5">Total Amount</th>
-                <th className="px-6 py-5">Status</th>
-                <th className="px-6 py-5 text-right">Action</th>
+                <th className="px-5 py-3">Order ID</th>
+                <th className="px-5 py-3">Customer</th>
+                <th className="px-5 py-3">Date</th>
+                <th className="px-5 py-3">Total</th>
+                <th className="px-5 py-3">Status</th>
+                <th className="px-5 py-3 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {loading ? (
-                [...Array(10)].map((_, i) => (
+                [...Array(8)].map((_, i) => (
                   <tr key={i}>
-                    <td colSpan="6" className="px-6 py-5"><div className="h-4 w-full bg-slate-50 animate-pulse rounded" /></td>
+                    <td colSpan="6" className="px-5 py-3.5"><div className="h-3.5 w-full bg-slate-50 animate-pulse rounded" /></td>
                   </tr>
                 ))
               ) : filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-20 text-center text-slate-400 font-medium">
-                    No orders found.
-                  </td>
+                  <td colSpan="6" className="px-5 py-12 text-center text-slate-400 text-xs font-medium">No orders found.</td>
                 </tr>
               ) : (
                 filteredOrders.map((order) => (
                   <tr key={order.id} className="hover:bg-slate-50/50 transition-all group">
-                    <td className="px-6 py-4 font-bold text-slate-900 text-sm">#{order.order_number}</td>
-                    <td className="px-6 py-4 text-sm text-slate-600 font-bold">{order.customer_name}</td>
-                    <td className="px-6 py-4 text-sm text-slate-500 font-medium">
-                      {new Date(order.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    <td className="px-5 py-3.5 font-bold text-slate-900 text-xs">#{order.order_number}</td>
+                    <td className="px-5 py-3.5 text-xs text-slate-600 font-bold truncate max-w-[120px]">{order.customer_name}</td>
+                    <td className="px-5 py-3.5 text-[10px] text-slate-500 font-medium">
+                      {new Date(order.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
                     </td>
-                    <td className="px-6 py-4 text-sm font-extrabold text-primary">KES {parseFloat(order.total).toLocaleString()}</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
+                    <td className="px-5 py-3.5 text-xs font-extrabold text-primary">KES {parseFloat(order.total).toLocaleString()}</td>
+                    <td className="px-5 py-3.5">
+                      <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
                         order.status === 'delivered' ? 'bg-green-50 text-green-600' :
                         order.status === 'pending' ? 'bg-orange-50 text-orange-600' :
                         'bg-blue-50 text-blue-600'
@@ -457,10 +345,10 @@ const Orders = () => {
                         {order.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-5 py-3.5 text-right">
                       <button
                         onClick={() => setSelectedOrder(order.id)}
-                        className="bg-accent text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest shadow-lg shadow-accent/20 group-hover:scale-105 active:scale-95 transition-all"
+                        className="bg-accent text-white px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-accent/10 group-hover:scale-105 active:scale-95 transition-all"
                       >
                         Details
                       </button>

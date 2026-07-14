@@ -11,18 +11,18 @@ import { partner } from '../api';
 const SidebarItem = ({ icon: Icon, label, path, badge, active }) => (
   <Link
     to={path}
-    className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all mb-1 group ${
+    className={`flex items-center justify-between px-3.5 py-2 rounded-xl transition-all mb-0.5 group ${
       active
         ? 'bg-primary-light text-primary font-bold shadow-sm'
         : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
     }`}
   >
-    <div className="flex items-center gap-3">
-      <Icon size={20} className={active ? 'text-primary' : 'group-hover:text-slate-900'} />
-      <span className="text-sm">{label}</span>
+    <div className="flex items-center gap-2.5">
+      <Icon size={18} className={active ? 'text-primary' : 'group-hover:text-slate-900'} />
+      <span className="text-xs">{label}</span>
     </div>
     {badge > 0 && (
-      <span className="bg-primary text-white text-[10px] px-2 py-0.5 rounded-full">
+      <span className="bg-primary text-white text-[9px] px-1.5 py-0.5 rounded-full">
         {badge}
       </span>
     )}
@@ -87,7 +87,6 @@ const Layout = ({ children }) => {
     { icon: BadgePercent, label: 'Promotions', path: '/promotions' },
     { icon: Users, label: 'Customers', path: '/customers' },
     { icon: BarChart3, label: 'Reports', path: '/reports' },
-    { icon: Wallet, label: 'Payouts', path: '/payouts' },
     { icon: CreditCard, label: 'Billing', path: '/billing' },
     { icon: Settings, label: 'Settings', path: '/settings' },
   ];
@@ -95,19 +94,19 @@ const Layout = ({ children }) => {
   return (
     <div className="min-h-screen bg-slate-50 flex">
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transition-transform lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="flex flex-col h-full p-4">
-          <div className="flex items-center gap-3 px-2 mb-10">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <Wine size={24} className="text-white" />
+      <aside className={`fixed inset-y-0 left-0 z-50 w-56 bg-white border-r border-slate-200 transition-transform lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="flex flex-col h-full p-2.5">
+          <div className="flex items-center gap-2.5 px-2 mb-5">
+            <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
+              <Wine size={20} className="text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900 leading-tight">TipsyTheoryy</h2>
-              <p className="text-[10px] text-slate-400 font-medium">Merchant Dashboard</p>
+              <h2 className="text-base font-bold text-slate-900 leading-tight">TipsyTheoryy</h2>
+              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Merchant</p>
             </div>
           </div>
 
-          <nav className="flex-1 overflow-y-auto">
+          <nav className="flex-1 overflow-y-auto no-scrollbar">
             {menuItems.map((item) => (
               <SidebarItem
                 key={item.path}
@@ -117,50 +116,50 @@ const Layout = ({ children }) => {
             ))}
           </nav>
 
-          <div className="mt-auto pt-6 border-t border-slate-100">
-            <Link to="/settings" className="bg-primary text-white p-4 rounded-2xl mb-6 relative overflow-hidden group block">
+          <div className="mt-auto pt-3 border-t border-slate-100">
+            <Link to="/settings" className="bg-primary text-white p-3 rounded-2xl mb-3 relative overflow-hidden group block">
                <div className="relative z-10 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center font-bold text-xs">TT</div>
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center font-bold text-[10px]">TT</div>
                     <div>
-                        <p className="text-xs font-bold truncate w-24">Store Profile</p>
-                        <p className="text-[10px] opacity-70 uppercase tracking-tighter">View Account</p>
+                        <p className="text-[11px] font-bold truncate w-20">Store Profile</p>
+                        <p className="text-[8px] opacity-70 uppercase tracking-tighter">View Account</p>
                     </div>
                   </div>
-                  <ChevronDown size={16} />
+                  <ChevronDown size={12} />
                </div>
             </Link>
 
             <button
               onClick={handleLogout}
-              className="flex items-center gap-3 px-4 py-3 w-full text-red-500 hover:bg-red-50 rounded-xl transition-all"
+              className="flex items-center gap-2.5 px-3.5 py-2 w-full text-red-500 hover:bg-red-50 rounded-xl transition-all"
             >
-               <LogOut size={20} />
-               <span className="text-sm font-bold">Logout</span>
+               <LogOut size={16} />
+               <span className="text-xs font-bold">Logout</span>
             </button>
           </div>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className={`flex-1 transition-all ${isSidebarOpen ? 'lg:ml-64' : ''}`}>
+      <main className={`flex-1 transition-all ${isSidebarOpen ? 'lg:ml-56' : ''}`}>
         {/* Topbar */}
-        <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 px-5 py-2.5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
             <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="lg:hidden text-slate-500">
-              <Menu size={24} />
+              <Menu size={20} />
             </button>
-            <h1 className="text-xl font-bold text-slate-900 uppercase tracking-tight">{menuItems.find(m => m.path === location.pathname)?.label || 'Dashboard'}</h1>
+            <h1 className="text-base font-bold text-slate-900 uppercase tracking-tight">{menuItems.find(m => m.path === location.pathname)?.label || 'Dashboard'}</h1>
           </div>
 
-          <div className="flex items-center gap-4 relative">
+          <div className="flex items-center gap-3 relative">
             <button
                 onClick={() => setIsNotifOpen(!isNotifOpen)}
-                className={`relative w-10 h-10 flex items-center justify-center rounded-xl transition-all ${isNotifOpen ? 'bg-primary text-white' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
+                className={`relative w-9 h-9 flex items-center justify-center rounded-xl transition-all ${isNotifOpen ? 'bg-primary text-white' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
             >
-                <Bell size={20} />
+                <Bell size={18} />
                 {notifications.length > 0 && (
-                    <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-accent rounded-full border-2 border-white" />
+                    <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-accent rounded-full border-2 border-white" />
                 )}
             </button>
 
@@ -203,23 +202,23 @@ const Layout = ({ children }) => {
 
             <div className="h-8 w-[1px] bg-slate-200" />
 
-            <Link to="/settings" className="flex items-center gap-3 pl-2 cursor-pointer group">
+            <Link to="/settings" className="flex items-center gap-2.5 pl-2 cursor-pointer group">
                 <div className="flex flex-col items-end hidden md:flex">
-                    <p className="text-sm font-bold text-slate-900">Tipsy Theoryy Store</p>
+                    <p className="text-xs font-bold text-slate-900">Tipsy Theoryy Store</p>
                     <div className="flex items-center gap-1">
-                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                        <span className="text-[10px] text-slate-500">Online</span>
+                        <div className="w-1 h-1 bg-green-500 rounded-full" />
+                        <span className="text-[9px] text-slate-500">Online</span>
                     </div>
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold group-hover:scale-105 transition-all">
-                   <Store size={20} />
+                <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white font-bold group-hover:scale-105 transition-all">
+                   <Store size={18} />
                 </div>
-                <ChevronDown size={16} className="text-slate-400" />
+                <ChevronDown size={14} className="text-slate-400" />
             </Link>
           </div>
         </header>
 
-        <div className="p-6">
+        <div className="p-4">
           {children}
         </div>
       </main>

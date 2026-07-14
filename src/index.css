@@ -17,6 +17,17 @@
   }
 }
 
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
 @layer components {
   .btn-primary {
     @apply bg-accent text-white px-6 py-3 rounded-xl font-bold transition-all hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed;

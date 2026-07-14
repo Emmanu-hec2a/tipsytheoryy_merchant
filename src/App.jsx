@@ -9,7 +9,6 @@ import Analytics from './pages/Analytics';
 import Inventory from './pages/Inventory';
 import Promotions from './pages/Promotions';
 import Customers from './pages/Customers';
-import Payouts from './pages/Payouts';
 import Settings from './pages/Settings';
 import Billing from './pages/Billing';
 import PendingApproval from './pages/PendingApproval';
@@ -86,7 +85,6 @@ function App() {
         <Route path="/marketing" element={isAuthenticated ? (isApproved ? <Layout><Marketing /></Layout> : <Navigate to="/pending-approval" />) : <Navigate to="/login" replace />} />
         <Route path="/promotions" element={isAuthenticated ? (isApproved ? <Layout><Promotions /></Layout> : <Navigate to="/pending-approval" />) : <Navigate to="/login" replace />} />
         <Route path="/customers" element={isAuthenticated ? (isApproved ? <Layout><Customers /></Layout> : <Navigate to="/pending-approval" />) : <Navigate to="/login" replace />} />
-        <Route path="/payouts" element={isAuthenticated ? (isApproved ? <Layout><Payouts /></Layout> : <Navigate to="/pending-approval" />) : <Navigate to="/login" replace />} />
 
         <Route path="/reports" element={
           isAuthenticated ? (

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock, Wine, User, Phone, MapPin, CheckCircle2 } from 'lucide-react';
 import { auth } from '../api';
+import LegalModal from '../components/LegalModal';
+import { legalTexts } from '../constants/legalTexts';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -16,6 +18,9 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Legal Modal State
+  const [legalModal, setLegalModal] = useState({ isOpen: false, title: '', content: '' });
 
   const locations = ['Nairobi, Kenya', 'Mombasa, Kenya', 'Kisumu, Kenya', 'Nakuru, Kenya'];
 
@@ -45,8 +50,23 @@ const Signup = () => {
     }
   };
 
+  const openLegal = (type) => {
+    if (type === 'privacy') {
+      setLegalModal({ isOpen: true, title: 'Privacy Policy', content: legalTexts.privacyPolicy });
+    } else {
+      setLegalModal({ isOpen: true, title: 'Terms of Service', content: legalTexts.merchantTerms });
+    }
+  };
+
   return (
     <div className="min-h-screen flex bg-slate-50">
+      <LegalModal
+        isOpen={legalModal.isOpen}
+        onClose={() => setLegalModal({ ...legalModal, isOpen: false })}
+        title={legalModal.title}
+        content={legalModal.content}
+      />
+
       {/* Left Side Branding */}
       <div className="hidden lg:flex lg:w-1/3 bg-primary relative overflow-hidden items-center justify-center p-12 text-white">
         <div className="relative z-10">
@@ -202,16 +222,17 @@ const Signup = () => {
                 Already have an account? <a href="/login" className="font-bold text-primary">Sign in</a>
             </p>
 
-            <div className="flex items-center gap-2 justify-center mt-6">
-                <input type="checkbox" checked={formData.agreeTerms} readOnly className="w-4 h-4 rounded text-primary border-slate-300" />
-                <span className="text-xs text-slate-500">I agree to the <a href="#" className="underline font-medium">Terms of Service</a> and <a href="#" className="underline font-medium">Privacy Policy</a></span>
+            <div className="flex flex-col items-center gap-2 justify-center mt-6">
+                <p className="text-[11px] text-slate-500 text-center leading-relaxed">
+                    By signing up, you agree to our <button type="button" onClick={() => openLegal('terms')} className="underline font-bold hover:text-primary transition-colors">T&C</button> and have read our <button type="button" onClick={() => openLegal('privacy')} className="underline font-bold hover:text-primary transition-colors">Privacy Policy</button>.
+                </p>
             </div>
           </form>
 
-          <div className="mt-12 pt-8 border-t flex justify-center gap-6 text-xs text-slate-400">
-             <span>TipsyTheoryy © 2026</span>
-             <a href="#" className="hover:text-slate-600">Privacy Policy</a>
-             <a href="#" className="hover:text-slate-600">Terms of Service</a>
+          <div className="mt-12 pt-8 border-t flex justify-center gap-6 text-xs text-slate-400 font-medium uppercase tracking-widest">
+             <span className="opacity-50">TipsyTheoryy © 2026</span>
+             <button type="button" onClick={() => openLegal('privacy')} className="hover:text-primary transition-colors">Privacy Policy</button>
+             <button type="button" onClick={() => openLegal('terms')} className="hover:text-primary transition-colors">Terms of Service</button>
           </div>
         </div>
       </div>
