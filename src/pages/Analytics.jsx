@@ -109,18 +109,18 @@ const Analytics = () => {
     <div className="space-y-6 pb-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-bold text-slate-900">Analytics & Insights</h2>
-          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Performance Tracking</p>
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">Analytics & Insights</h2>
+          <p className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-widest">Performance Tracking</p>
         </div>
         <div className="flex items-center gap-2">
           <select
             value={dateRange} onChange={(e) => setDateRange(e.target.value)}
-            className="bg-white px-3 py-2 rounded-xl border border-slate-200 text-slate-600 font-bold text-[10px] outline-none cursor-pointer"
+            className="bg-white dark:bg-slate-900 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-bold text-[10px] outline-none cursor-pointer"
           >
             <option value="7d">Last 7 Days</option>
             <option value="30d">Last 30 Days</option>
           </select>
-          <button className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-600 font-bold text-[10px] uppercase shadow-sm">
+          <button className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-bold text-[10px] uppercase shadow-sm">
             <Download size={14} /> Export
           </button>
         </div>
@@ -128,40 +128,40 @@ const Analytics = () => {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Revenue', value: `KSh ${summary.total_revenue.toLocaleString()}`, icon: TrendingUp, color: 'text-green-600', bg: 'bg-green-50' },
-          { label: 'Orders', value: summary.total_orders, icon: ShoppingBag, color: 'text-primary', bg: 'bg-primary-light' },
-          { label: 'Deliveries', value: summary.completed_orders || 0, icon: CheckCircle2, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { label: 'Avg Value', value: `KSh ${summary.total_orders > 0 ? (summary.total_revenue / summary.total_orders).toFixed(0) : 0}`, icon: BarChart3, color: 'text-orange-600', bg: 'bg-orange-50' },
+          { label: 'Revenue', value: `KSh ${summary.total_revenue.toLocaleString()}`, icon: TrendingUp, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20' },
+          { label: 'Orders', value: summary.total_orders, icon: ShoppingBag, color: 'text-primary', bg: 'bg-primary-light dark:bg-primary/20' },
+          { label: 'Deliveries', value: summary.completed_orders || 0, icon: CheckCircle2, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20' },
+          { label: 'Avg Value', value: `KSh ${summary.total_orders > 0 ? (summary.total_revenue / summary.total_orders).toFixed(0) : 0}`, icon: BarChart3, color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-900/20' },
         ].map((stat, i) => (
-          <div key={i} className="bg-white p-3.5 rounded-3xl border border-slate-100 shadow-sm">
+          <div key={i} className="bg-white dark:bg-slate-900 p-3.5 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
             <div className="flex items-center gap-2.5 mb-1.5">
               <div className={`w-7 h-7 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}><stat.icon size={14} /></div>
-              <p className="text-slate-400 text-[8px] font-bold uppercase tracking-wider">{stat.label}</p>
+              <p className="text-slate-400 dark:text-slate-500 text-[8px] font-bold uppercase tracking-wider">{stat.label}</p>
             </div>
-            <h3 className="text-base font-extrabold text-slate-900">{stat.value}</h3>
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">{stat.value}</h3>
           </div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2 bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
            <div className="mb-4">
-              <h3 className="text-sm font-bold text-slate-900">Sales Trend</h3>
-              <p className="text-[9px] text-slate-400 font-medium uppercase tracking-widest">Revenue over time</p>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Sales Trend</h3>
+              <p className="text-[9px] text-slate-400 dark:text-slate-500 font-medium uppercase tracking-widest">Revenue over time</p>
            </div>
            <div className="h-[200px]">
               {revenueData.length > 0 ? <Line data={lineData} options={chartOptions} /> : <div className="h-full flex items-center justify-center text-[10px] text-slate-400 font-bold uppercase">No data</div>}
            </div>
         </div>
 
-        <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-           <h3 className="text-sm font-bold text-slate-900 mb-1">Output</h3>
-           <p className="text-[9px] text-slate-400 font-medium mb-4 uppercase tracking-widest">Order distribution</p>
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
+           <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">Output</h3>
+           <p className="text-[9px] text-slate-400 dark:text-slate-500 font-medium mb-4 uppercase tracking-widest">Order distribution</p>
            <div className="relative h-[150px] mb-4">
               <Doughnut data={donutData} options={chartOptions} />
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                 <span className="text-xl font-extrabold text-slate-900">{summary.total_orders}</span>
-                 <span className="text-[7px] text-slate-400 font-bold uppercase">Total</span>
+                 <span className="text-xl font-extrabold text-slate-900 dark:text-white">{summary.total_orders}</span>
+                 <span className="text-[7px] text-slate-400 dark:text-slate-500 font-bold uppercase">Total</span>
               </div>
            </div>
            <div className="space-y-2">
@@ -169,32 +169,32 @@ const Analytics = () => {
                 <div key={i} className="flex items-center justify-between">
                    <div className="flex items-center gap-2">
                       <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: donutData.datasets[0].backgroundColor[i] }} />
-                      <span className="text-[11px] font-medium text-slate-600">{label}</span>
+                      <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">{label}</span>
                    </div>
-                   <span className="text-[11px] font-bold text-slate-900">{donutData.datasets[0].data[i]}</span>
+                   <span className="text-[11px] font-bold text-slate-900 dark:text-white">{donutData.datasets[0].data[i]}</span>
                 </div>
               ))}
            </div>
         </div>
 
-        <div className="lg:col-span-2 bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-           <h3 className="text-sm font-bold text-slate-900 mb-4">Top Selling Items</h3>
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
+           <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Top Selling Items</h3>
            <div className="h-[200px]">
               {topProducts.length > 0 ? <Bar data={barData} options={{...chartOptions, indexAxis: 'y'}} /> : <div className="h-full flex items-center justify-center text-[10px] text-slate-400 font-bold uppercase">No sales yet</div>}
            </div>
         </div>
 
         <SoftGate isGated={store?.plan !== 'pro'} featureName="Customer Insights" planRequired="Pro">
-          <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm min-h-[250px]">
-              <h3 className="text-sm font-bold text-slate-900 mb-4">Demographics</h3>
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm min-h-[250px]">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Demographics</h3>
               <div className="space-y-5">
                 {[ { label: 'New', val: 0, color: 'bg-primary' }, { label: 'Returning', val: 0, color: 'bg-accent' } ].map((item, i) => (
                   <div key={i} className="space-y-1.5">
-                      <div className="flex justify-between text-[9px] font-bold text-slate-500 uppercase tracking-widest">
+                      <div className="flex justify-between text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                         <span>{item.label}</span>
                         <span>{item.val}%</span>
                       </div>
-                      <div className="w-full h-1.5 bg-slate-50 rounded-full overflow-hidden">
+                      <div className="w-full h-1.5 bg-slate-50 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div className={`h-full rounded-full ${item.color}`} style={{ width: `${item.val}%` }} />
                       </div>
                   </div>

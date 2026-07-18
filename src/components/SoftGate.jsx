@@ -14,14 +14,14 @@ const SoftGate = ({ isGated, children, featureName, planRequired = "Pro" }) => {
 
       {/* Overlay Content */}
       <div className="absolute inset-0 z-20 flex items-center justify-center p-4 text-center animate-in fade-in zoom-in-95 duration-500">
-        <div className="bg-white/90 backdrop-blur-xl p-6 rounded-3xl border border-slate-100 shadow-xl w-full max-w-[280px] space-y-4">
-          <div className="w-14 h-14 bg-primary-light text-primary rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+        <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-xl w-full max-w-[280px] space-y-4">
+          <div className="w-14 h-14 bg-primary-light dark:bg-primary/20 text-primary rounded-2xl flex items-center justify-center mx-auto shadow-inner">
             <Crown size={28} className="animate-pulse" />
           </div>
 
           <div className="space-y-1">
-            <h3 className="text-lg font-bold text-slate-900 leading-tight">{featureName}</h3>
-            <p className="text-slate-500 text-[10px] font-medium leading-relaxed">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">{featureName}</h3>
+            <p className="text-slate-500 dark:text-slate-400 text-[10px] font-medium leading-relaxed">
               Unlock advanced tools with our <span className="text-primary font-bold">{planRequired} Plan</span>.
             </p>
           </div>

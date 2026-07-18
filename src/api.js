@@ -60,6 +60,9 @@ export const partner = {
   paySubscription: (data) => api.post('partner/billing/pay-now/', data),
   sendMarketingBlast: (data) => api.post('partner/marketing/blast/', data),
   getMarketingStats: () => api.get('partner/marketing/stats/'),
+  getRevenueShare: () => api.get('partner/revenue-share/'),
+  payRevenueShare: (data) => api.post('partner/revenue-share/', data),
+  verifyRevenueGate: (data) => api.post('partner/revenue-share/gate/', data),
 };
 
 export default api;

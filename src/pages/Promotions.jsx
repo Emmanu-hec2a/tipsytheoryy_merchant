@@ -48,42 +48,42 @@ const PromotionModal = ({ isOpen, onClose, onSave }) => {
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-           <h3 className="text-lg font-bold text-slate-900">Create Promo</h3>
-           <button onClick={onClose} className="p-1.5 hover:bg-slate-50 rounded-xl text-slate-400 transition-all"><X size={20} /></button>
+      <div className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+           <h3 className="text-lg font-bold text-slate-900 dark:text-white">Create Promo</h3>
+           <button onClick={onClose} className="p-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl text-slate-400 transition-all"><X size={20} /></button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
            <div>
-              <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Campaign Title</label>
+              <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Campaign Title</label>
               <input
-                required className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-medium outline-none focus:ring-1 focus:ring-primary transition-all"
+                required className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-xs font-medium text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-primary transition-all"
                 placeholder="Weekend Sale"
                 value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})}
               />
            </div>
            <div className="grid grid-cols-2 gap-3">
               <div>
-                 <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Code</label>
+                 <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Code</label>
                  <input
-                    required className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-extrabold uppercase tracking-widest text-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+                    required className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-xs font-extrabold uppercase tracking-widest text-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                     placeholder="SAVE20"
                     value={formData.code} onChange={e => setFormData({...formData, code: e.target.value.toUpperCase()})}
                  />
               </div>
               <div>
-                 <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Disc (%)</label>
+                 <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Disc (%)</label>
                  <input
-                    required type="number" className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-extrabold focus:ring-1 focus:ring-primary outline-none transition-all"
+                    required type="number" className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-xs font-extrabold text-slate-900 dark:text-white focus:ring-1 focus:ring-primary outline-none transition-all"
                     placeholder="20"
                     value={formData.discount_percentage} onChange={e => setFormData({...formData, discount_percentage: e.target.value})}
                  />
               </div>
            </div>
            <div>
-              <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Expiry Date</label>
+              <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Expiry Date</label>
               <input
-                required type="date" className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-medium focus:ring-1 focus:ring-primary outline-none transition-all"
+                required type="date" className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-xs font-medium text-slate-900 dark:text-white focus:ring-1 focus:ring-primary outline-none transition-all"
                 value={formData.end_date} onChange={e => setFormData({...formData, end_date: e.target.value})}
               />
            </div>
@@ -125,10 +125,10 @@ const Promotions = () => {
 
   return (
     <div className="space-y-5 pb-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white p-4 rounded-3xl border border-slate-100 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
         <div>
-           <h2 className="text-sm font-bold text-slate-900">Campaign Manager</h2>
-           <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Discounts & Vouchers</p>
+           <h2 className="text-sm font-bold text-slate-900 dark:text-white">Campaign Manager</h2>
+           <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">Discounts & Vouchers</p>
         </div>
         <button onClick={() => setModalOpen(true)} className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white rounded-xl font-bold text-[9px] uppercase tracking-widest shadow-lg shadow-primary/20 transition-all">
             <Plus size={14} /> New Promo
@@ -138,41 +138,41 @@ const Promotions = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {loading ? (
            [...Array(3)].map((_, i) => (
-             <div key={i} className="h-28 bg-white animate-pulse rounded-3xl border border-slate-100" />
+             <div key={i} className="h-28 bg-white dark:bg-slate-900 animate-pulse rounded-3xl border border-slate-100 dark:border-slate-800" />
            ))
         ) : promotions.length === 0 ? (
-           <div className="col-span-full py-12 text-center bg-white rounded-3xl border border-dashed border-slate-200">
-              <Ticket size={24} className="mx-auto mb-2 text-slate-200" />
-              <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest">No active campaigns</p>
+           <div className="col-span-full py-12 text-center bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
+              <Ticket size={24} className="mx-auto mb-2 text-slate-200 dark:text-slate-700" />
+              <p className="text-slate-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-widest">No active campaigns</p>
            </div>
         ) : (
           promotions.map(promo => {
             const isExpired = new Date(promo.end_date) < new Date();
             return (
-              <div key={promo.id} className="bg-white p-4 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all relative overflow-hidden group">
+              <div key={promo.id} className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-all relative overflow-hidden group">
                  <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2.5">
-                       <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${isExpired ? 'bg-slate-50 text-slate-300' : 'bg-orange-50 text-orange-500'}`}><Ticket size={16} /></div>
+                       <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${isExpired ? 'bg-slate-50 dark:bg-slate-800 text-slate-300' : 'bg-orange-50 dark:bg-orange-900/20 text-orange-500'}`}><Ticket size={16} /></div>
                        <div>
-                          <h4 className="text-sm font-extrabold text-slate-900 leading-none">{promo.code}</h4>
-                          <p className="text-[8px] text-slate-400 font-bold uppercase tracking-tighter mt-1 truncate max-w-[100px]">{promo.title}</p>
+                          <h4 className="text-sm font-extrabold text-slate-900 dark:text-white leading-none">{promo.code}</h4>
+                          <p className="text-[8px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-tighter mt-1 truncate max-w-[100px]">{promo.title}</p>
                        </div>
                     </div>
-                    <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${isExpired ? 'bg-red-50 text-red-400' : 'bg-green-50 text-green-600'}`}>{isExpired ? 'Expired' : 'Live'}</span>
+                    <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${isExpired ? 'bg-red-50 dark:bg-red-900/20 text-red-400' : 'bg-green-50 dark:bg-green-900/20 text-green-600'}`}>{isExpired ? 'Expired' : 'Live'}</span>
                  </div>
-                 <div className="grid grid-cols-2 gap-2 py-2.5 border-y border-slate-50 mb-2.5">
+                 <div className="grid grid-cols-2 gap-2 py-2.5 border-y border-slate-50 dark:border-slate-800 mb-2.5">
                     <div>
-                       <p className="text-[7px] text-slate-400 font-bold uppercase mb-0.5">Value</p>
+                       <p className="text-[7px] text-slate-400 dark:text-slate-500 font-bold uppercase mb-0.5">Value</p>
                        <p className="text-xs font-extrabold text-primary">{promo.discount_percentage}% OFF</p>
                     </div>
                     <div className="text-right">
-                       <p className="text-[7px] text-slate-400 font-bold uppercase mb-0.5">Expires</p>
-                       <p className="text-[10px] font-bold text-slate-600">{new Date(promo.end_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</p>
+                       <p className="text-[7px] text-slate-400 dark:text-slate-500 font-bold uppercase mb-0.5">Expires</p>
+                       <p className="text-[10px] font-bold text-slate-600 dark:text-slate-400">{new Date(promo.end_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</p>
                     </div>
                  </div>
                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase"><TrendingUp size={10} /> {promo.times_used || 0} REDEEMED</div>
-                    <button onClick={() => handleDelete(promo.id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={12} /></button>
+                    <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase"><TrendingUp size={10} /> {promo.times_used || 0} REDEEMED</div>
+                    <button onClick={() => handleDelete(promo.id)} className="p-1.5 text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all"><Trash2 size={12} /></button>
                  </div>
               </div>
             );

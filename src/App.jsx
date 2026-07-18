@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ThemeProvider } from './context/ThemeContext';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
@@ -11,6 +12,7 @@ import Promotions from './pages/Promotions';
 import Customers from './pages/Customers';
 import Settings from './pages/Settings';
 import Billing from './pages/Billing';
+import RevenueSharing from './pages/RevenueSharing';
 import PendingApproval from './pages/PendingApproval';
 import Marketing from './pages/Marketing';
 import Layout from './components/Layout';
@@ -46,10 +48,11 @@ function App() {
   if (loading) return <div className="min-h-screen bg-white flex items-center justify-center font-bold text-primary animate-pulse text-2xl uppercase tracking-widest">TipsyTheoryy...</div>;
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+    <ThemeProvider>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
 
         <Route path="/dashboard" element={
           isAuthenticated ? (
@@ -110,10 +113,19 @@ function App() {
           ) : <Navigate to="/login" replace />
         } />
 
+        <Route path="/revenue-sharing" element={
+          isAuthenticated ? (
+            isApproved ? (
+              <Layout><RevenueSharing /></Layout>
+            ) : <Navigate to="/pending-approval" replace />
+          ) : <Navigate to="/login" replace />
+        } />
+
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<div className="p-20 text-center">404 - Page Not Found</div>} />
       </Routes>
     </Router>
+    </ThemeProvider>
   );
 }
 

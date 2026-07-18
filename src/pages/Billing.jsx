@@ -14,22 +14,22 @@ const PaymentModal = ({ isOpen, onClose, onConfirm, plan, price, loading }) => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+      <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
         <div className="p-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-bold text-slate-900">M-Pesa Payment</h3>
-            <button onClick={onClose} className="p-1.5 hover:bg-slate-100 rounded-full transition-colors">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">M-Pesa Payment</h3>
+            <button onClick={onClose} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
               <X size={18} className="text-slate-400" />
             </button>
           </div>
 
-          <div className="bg-slate-50 rounded-2xl p-3.5 mb-5 flex items-center gap-3">
+          <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl p-3.5 mb-5 flex items-center gap-3">
             <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0">
               <Wine size={20} />
             </div>
             <div>
               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Selected Plan</p>
-              <h4 className="text-[11px] font-bold text-slate-900">{plan.toUpperCase()} — KES {price}</h4>
+              <h4 className="text-[11px] font-bold text-slate-900 dark:text-white">{plan.toUpperCase()} — KES {price}</h4>
             </div>
           </div>
 
@@ -45,12 +45,12 @@ const PaymentModal = ({ isOpen, onClose, onConfirm, plan, price, loading }) => {
                   placeholder="0712345678"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-transparent focus:border-primary focus:bg-white rounded-xl text-xs font-bold transition-all outline-none"
+                  className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border border-transparent focus:border-primary focus:bg-white dark:focus:bg-slate-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white transition-all outline-none"
                 />
               </div>
             </div>
 
-            <p className="text-[10px] text-slate-500 font-medium leading-relaxed px-1">
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed px-1">
               Enter PIN in the STK Push prompt on your phone.
             </p>
 
@@ -74,15 +74,15 @@ const PlanCard = ({ plan, current, isActive, price, features, onUpgrade, loading
 
   if (isEnterprise) {
     return (
-      <div className="bg-white rounded-[2rem] border border-slate-100 p-5 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-all">
-        <div className="w-10 h-10 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center mb-3">
+      <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 p-5 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-all">
+        <div className="w-10 h-10 bg-slate-50 dark:bg-slate-800 text-slate-400 rounded-xl flex items-center justify-center mb-3">
           <Store size={20} />
         </div>
-        <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest mb-1">Enterprise</h4>
-        <p className="text-[10px] text-slate-500 font-medium leading-relaxed mb-4 px-2">
+        <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-widest mb-1">Enterprise</h4>
+        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-4 px-2">
           Custom solutions for franchises.
         </p>
-        <button className="w-full py-2 rounded-xl border border-slate-200 text-slate-600 text-[10px] font-bold hover:bg-slate-50 transition-all mt-auto">
+        <button className="w-full py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 text-[10px] font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all mt-auto">
           Contact Sales
         </button>
       </div>
@@ -92,18 +92,18 @@ const PlanCard = ({ plan, current, isActive, price, features, onUpgrade, loading
   const isExpired = current && !isActive;
 
   return (
-    <div className={`bg-white rounded-[2rem] border p-5 flex flex-col relative transition-all ${
+    <div className={`bg-white dark:bg-slate-900 rounded-[2rem] border p-5 flex flex-col relative transition-all ${
       current
-        ? (isExpired ? 'border-red-200 ring-1 ring-red-100 bg-red-50/10' : (isPro ? 'border-orange-500 ring-1 ring-orange-500' : 'border-primary ring-1 ring-primary'))
-        : 'border-slate-100 shadow-sm hover:shadow-md'
+        ? (isExpired ? 'border-red-200 dark:border-red-900/50 ring-1 ring-red-100 dark:ring-red-900/20 bg-red-50/10' : (isPro ? 'border-orange-500 ring-1 ring-orange-500' : 'border-primary ring-1 ring-primary'))
+        : 'border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md'
     }`}>
       <div className="flex items-center gap-3 mb-5">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isPro ? 'bg-orange-50 text-orange-500' : 'bg-primary-light text-primary'}`}>
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isPro ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-500' : 'bg-primary-light dark:bg-primary/20 text-primary'}`}>
           <Store size={20} />
         </div>
         <div>
-          <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest leading-none mb-1">{plan} Plan</h4>
-          <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tight">
+          <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-widest leading-none mb-1">{plan} Plan</h4>
+          <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-tight">
             {isPro ? 'Elite' : 'Standard'}
           </p>
         </div>
@@ -116,15 +116,15 @@ const PlanCard = ({ plan, current, isActive, price, features, onUpgrade, loading
 
       <div className="mb-5">
         <div className="flex items-baseline gap-1">
-          <span className="text-xl font-extrabold text-slate-900">KES {price}</span>
-          <span className="text-slate-500 font-bold text-[10px]">/mo</span>
+          <span className="text-xl font-extrabold text-slate-900 dark:text-white">KES {price}</span>
+          <span className="text-slate-500 dark:text-slate-400 font-bold text-[10px]">/mo</span>
         </div>
       </div>
 
       <ul className="space-y-2 mb-6 flex-1">
         {features.map((feature, i) => (
-          <li key={i} className="flex items-start gap-2.5 text-[11px] font-medium text-slate-600">
-            <CheckCircle2 size={14} className="text-slate-300 shrink-0 mt-0.5" />
+          <li key={i} className="flex items-start gap-2.5 text-[11px] font-medium text-slate-600 dark:text-slate-400">
+            <CheckCircle2 size={14} className="text-slate-300 dark:text-slate-600 shrink-0 mt-0.5" />
             {feature}
           </li>
         ))}
@@ -135,7 +135,7 @@ const PlanCard = ({ plan, current, isActive, price, features, onUpgrade, loading
         onClick={() => onUpgrade(plan)}
         className={`w-full py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${
           current
-            ? (isExpired ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : (isPro ? 'bg-slate-50 text-slate-400' : 'bg-primary text-white opacity-50'))
+            ? (isExpired ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : (isPro ? 'bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500' : 'bg-primary text-white opacity-50'))
             : (isPro ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'bg-primary text-white shadow-lg shadow-primary/10')
         } hover:scale-[1.02] active:scale-95`}
       >
@@ -259,14 +259,14 @@ const Billing = () => {
            </div>
         </div>
 
-        <div className="bg-white rounded-[2rem] p-5 border border-slate-100 shadow-sm flex flex-col justify-between">
+        <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-5 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
            <div className="flex items-start gap-3 mb-4">
-              <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${isActive ? 'bg-orange-50 text-orange-500' : 'bg-red-50 text-red-500'}`}>
+              <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${isActive ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-500' : 'bg-red-50 dark:bg-red-900/20 text-red-500'}`}>
                  {isActive ? <AlertTriangle size={16} /> : <AlertCircle size={16} />}
               </div>
               <div>
-                 <h4 className="text-[10px] font-bold text-slate-900 uppercase tracking-tight">{isActive ? 'Note' : 'Action Required'}</h4>
-                 <p className="text-[9px] text-slate-500 font-medium leading-relaxed mt-1">
+                 <h4 className="text-[10px] font-bold text-slate-900 dark:text-white uppercase tracking-tight">{isActive ? 'Note' : 'Action Required'}</h4>
+                 <p className="text-[9px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed mt-1">
                    {isActive ? 'Overdue balances cause store suspension.' : 'Renew now to resume operations.'}
                  </p>
               </div>
@@ -282,7 +282,7 @@ const Billing = () => {
       </div>
 
       {message.text && (
-        <div className={`p-3.5 rounded-2xl border flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300 ${message.type === 'success' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700'}`}>
+        <div className={`p-3.5 rounded-2xl border flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300 ${message.type === 'success' ? 'bg-green-50 dark:bg-green-900/10 border-green-100 dark:border-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900/30 text-red-700 dark:text-red-400'}`}>
           {message.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
           <p className="text-xs font-bold">{message.text}</p>
         </div>
@@ -290,7 +290,7 @@ const Billing = () => {
 
       <div className="space-y-4">
         <div>
-           <h3 className="text-sm font-bold text-slate-900 px-1">Subscription Plans</h3>
+           <h3 className="text-sm font-bold text-slate-900 dark:text-white px-1">Subscription Plans</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
            <PlanCard
@@ -307,18 +307,18 @@ const Billing = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-50 flex items-center justify-between">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between">
            <div>
-              <h3 className="text-sm font-bold text-slate-900">Payment History</h3>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Payment History</h3>
            </div>
-           <button onClick={fetchBillingData} className="w-8 h-8 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center hover:bg-slate-100 transition-all">
+           <button onClick={fetchBillingData} className="w-8 h-8 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded-xl flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
               <RefreshCw size={14} />
            </button>
         </div>
         <div className="overflow-x-auto">
            <table className="w-full text-left">
-              <thead className="bg-slate-50 text-[8px] uppercase font-bold text-slate-400 tracking-widest border-b border-slate-100">
+              <thead className="bg-slate-50 dark:bg-slate-800/50 text-[8px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-widest border-b border-slate-100 dark:border-slate-800">
                  <tr>
                     <th className="px-5 py-3">Date</th>
                     <th className="px-5 py-3">Amount</th>
@@ -327,22 +327,22 @@ const Billing = () => {
                     <th className="px-5 py-3 text-right">Action</th>
                  </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
                  {history.length === 0 ? (
-                    <tr><td colSpan="5" className="px-5 py-12 text-center text-slate-400 text-xs font-medium">No records found</td></tr>
+                    <tr><td colSpan="5" className="px-5 py-12 text-center text-slate-400 dark:text-slate-500 text-xs font-medium">No records found</td></tr>
                  ) : (
                     history.map((item) => (
-                       <tr key={item.id} className="hover:bg-slate-50/50 transition-all group">
-                          <td className="px-5 py-3.5 text-[10px] font-bold text-slate-600 uppercase">
+                       <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-all group">
+                          <td className="px-5 py-3.5 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">
                              {new Date(item.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
                           </td>
-                          <td className="px-5 py-3.5 text-xs font-extrabold text-slate-900">KSh {parseFloat(item.amount).toLocaleString()}</td>
-                          <td className="px-5 py-3.5 font-mono text-[9px] text-slate-400 uppercase tracking-widest">{item.mpesa_receipt || '---'}</td>
+                          <td className="px-5 py-3.5 text-xs font-extrabold text-slate-900 dark:text-white">KSh {parseFloat(item.amount).toLocaleString()}</td>
+                          <td className="px-5 py-3.5 font-mono text-[9px] text-slate-400 dark:text-slate-500 uppercase tracking-widest">{item.mpesa_receipt || '---'}</td>
                           <td className="px-5 py-3.5">
-                             <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase ${item.status === 'success' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>{item.status}</span>
+                             <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase ${item.status === 'success' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400'}`}>{item.status}</span>
                           </td>
                           <td className="px-5 py-3.5 text-right">
-                             <Download size={14} className="text-slate-300 group-hover:text-primary cursor-pointer ml-auto" />
+                             <Download size={14} className="text-slate-300 dark:text-slate-600 group-hover:text-primary cursor-pointer ml-auto" />
                           </td>
                        </tr>
                     ))
