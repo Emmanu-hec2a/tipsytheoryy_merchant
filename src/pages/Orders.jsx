@@ -123,6 +123,9 @@ const OrderDetailSidebar = ({ orderId, onClose, onUpdate }) => {
                 <div className="text-right">
                   <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Total</p>
                   <p className="text-xl font-extrabold text-primary">KES {parseFloat(order.total).toLocaleString()}</p>
+                  {parseFloat(order.discount_amount || 0) > 0 && (
+                    <p className="text-[8px] font-bold text-green-600 uppercase tracking-tighter">Saved KSh {parseFloat(order.discount_amount).toLocaleString()}</p>
+                  )}
                 </div>
               </div>
 

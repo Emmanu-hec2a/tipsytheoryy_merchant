@@ -2,16 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { partner } from '../api';
 import { Ticket, Plus, Calendar, Trash2, X, Save, TrendingUp, Clock, Tag } from 'lucide-react';
 
-const PromotionModal = ({ isOpen, onClose, onSave }) => {
+const PromotionModal = ({ isOpen, onClose, onSave, storeId }) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     code: '',
     discount_percentage: '',
+    discount_amount: '',
+    min_order_amount: '0',
+    usage_limit: '',
     start_date: new Date().toISOString().split('T')[0],
     end_date: '',
     is_active: true
   });
+  const [discountType, setDiscountType] = useState('percentage');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -21,10 +25,14 @@ const PromotionModal = ({ isOpen, onClose, onSave }) => {
         description: '',
         code: '',
         discount_percentage: '',
+        discount_amount: '',
+        min_order_amount: '0',
+        usage_limit: '',
         start_date: new Date().toISOString().split('T')[0],
         end_date: '',
         is_active: true
       });
+      setDiscountType('percentage');
     }
   }, [isOpen]);
 
@@ -33,13 +41,22 @@ const PromotionModal = ({ isOpen, onClose, onSave }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const formattedData = { ...formData, end_date: `${formData.end_date}T23:59:59` };
+
+    const payload = { ...formData, store: storeId };
+    if (discountType === 'percentage') {
+        payload.discount_amount = null;
+    } else {
+        payload.discount_percentage = null;
+    }
+
+    const formattedData = { ...payload, end_date: `${formData.end_date}T23:59:59` };
     try {
       await partner.createPromotion(formattedData);
       onSave();
       onClose();
     } catch (err) {
-      alert('Failed to save promotion');
+      const errorMsg = err.response?.data ? JSON.stringify(err.response.data) : 'Failed to save promotion';
+      alert(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -53,7 +70,7 @@ const PromotionModal = ({ isOpen, onClose, onSave }) => {
            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Create Promo</h3>
            <button onClick={onClose} className="p-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl text-slate-400 transition-all"><X size={20} /></button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto no-scrollbar">
            <div>
               <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Campaign Title</label>
               <input
@@ -62,6 +79,7 @@ const PromotionModal = ({ isOpen, onClose, onSave }) => {
                 value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})}
               />
            </div>
+
            <div className="grid grid-cols-2 gap-3">
               <div>
                  <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Code</label>
@@ -72,21 +90,61 @@ const PromotionModal = ({ isOpen, onClose, onSave }) => {
                  />
               </div>
               <div>
-                 <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Disc (%)</label>
+                 <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Discount Type</label>
+                 <select
+                    value={discountType}
+                    onChange={e => setDiscountType(e.target.value)}
+                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-3 text-[10px] font-bold text-slate-900 dark:text-white outline-none"
+                 >
+                    <option value="percentage">Percentage (%)</option>
+                    <option value="amount">Fixed Amount (KSh)</option>
+                 </select>
+              </div>
+           </div>
+
+           <div className="grid grid-cols-2 gap-3">
+              <div>
+                 <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">
+                    {discountType === 'percentage' ? 'Disc (%)' : 'Amount (KSh)'}
+                 </label>
                  <input
                     required type="number" className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-xs font-extrabold text-slate-900 dark:text-white focus:ring-1 focus:ring-primary outline-none transition-all"
-                    placeholder="20"
-                    value={formData.discount_percentage} onChange={e => setFormData({...formData, discount_percentage: e.target.value})}
+                    placeholder={discountType === 'percentage' ? '20' : '500'}
+                    value={discountType === 'percentage' ? formData.discount_percentage : formData.discount_amount}
+                    onChange={e => setFormData({
+                        ...formData,
+                        [discountType === 'percentage' ? 'discount_percentage' : 'discount_amount']: e.target.value
+                    })}
+                 />
+              </div>
+              <div>
+                 <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Min. Order (KSh)</label>
+                 <input
+                    type="number" className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-xs font-extrabold text-slate-900 dark:text-white focus:ring-1 focus:ring-primary outline-none transition-all"
+                    placeholder="0"
+                    value={formData.min_order_amount} onChange={e => setFormData({...formData, min_order_amount: e.target.value})}
                  />
               </div>
            </div>
-           <div>
-              <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Expiry Date</label>
-              <input
-                required type="date" className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-xs font-medium text-slate-900 dark:text-white focus:ring-1 focus:ring-primary outline-none transition-all"
-                value={formData.end_date} onChange={e => setFormData({...formData, end_date: e.target.value})}
-              />
+
+           <div className="grid grid-cols-2 gap-3">
+              <div>
+                 <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Usage Limit</label>
+                 <input
+                    type="number" className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-xs font-bold text-slate-900 dark:text-white focus:ring-1 focus:ring-primary outline-none transition-all"
+                    placeholder="Unlimited"
+                    value={formData.usage_limit} onChange={e => setFormData({...formData, usage_limit: e.target.value})}
+                 />
+              </div>
+              <div>
+                 <label className="block text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Expiry Date</label>
+                 <input
+                    required type="date" className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-4 text-xs font-medium text-slate-900 dark:text-white focus:ring-1 focus:ring-primary outline-none transition-all"
+                    value={formData.end_date} onChange={e => setFormData({...formData, end_date: e.target.value})}
+                 />
+              </div>
            </div>
+
            <button
             disabled={loading}
             className="w-full py-3 bg-primary text-white rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
@@ -103,10 +161,21 @@ const Promotions = () => {
   const [promotions, setPromotions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [storeId, setStoreId] = useState(null);
 
   useEffect(() => {
     fetchData();
+    fetchStoreId();
   }, []);
+
+  const fetchStoreId = async () => {
+    try {
+      const { data } = await partner.checkStatus();
+      setStoreId(data.store_id);
+    } catch (err) {
+      console.error('Failed to fetch store context');
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -163,15 +232,24 @@ const Promotions = () => {
                  <div className="grid grid-cols-2 gap-2 py-2.5 border-y border-slate-50 dark:border-slate-800 mb-2.5">
                     <div>
                        <p className="text-[7px] text-slate-400 dark:text-slate-500 font-bold uppercase mb-0.5">Value</p>
-                       <p className="text-xs font-extrabold text-primary">{promo.discount_percentage}% OFF</p>
+                       <p className="text-xs font-extrabold text-primary">
+                        {promo.discount_percentage ? `${promo.discount_percentage}% OFF` : `KSh ${parseFloat(promo.discount_amount).toLocaleString()} OFF`}
+                       </p>
                     </div>
                     <div className="text-right">
-                       <p className="text-[7px] text-slate-400 dark:text-slate-500 font-bold uppercase mb-0.5">Expires</p>
-                       <p className="text-[10px] font-bold text-slate-600 dark:text-slate-400">{new Date(promo.end_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</p>
+                       <p className="text-[7px] text-slate-400 dark:text-slate-500 font-bold uppercase mb-0.5">Min Order</p>
+                       <p className="text-[10px] font-bold text-slate-600 dark:text-slate-400">KSh {parseFloat(promo.min_order_amount || 0).toLocaleString()}</p>
                     </div>
                  </div>
                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase"><TrendingUp size={10} /> {promo.times_used || 0} REDEEMED</div>
+                    <div className="flex flex-col">
+                        <div className="flex items-center gap-1.5 text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase">
+                            <TrendingUp size={10} /> {promo.times_used || 0} REDEEMED
+                        </div>
+                        {promo.usage_limit && (
+                            <p className="text-[7px] text-slate-400 mt-0.5 font-medium italic">Limit: {promo.usage_limit} total uses</p>
+                        )}
+                    </div>
                     <button onClick={() => handleDelete(promo.id)} className="p-1.5 text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all"><Trash2 size={12} /></button>
                  </div>
               </div>
@@ -179,7 +257,12 @@ const Promotions = () => {
           })
         )}
       </div>
-      <PromotionModal isOpen={modalOpen} onClose={() => setModalOpen(false)} onSave={fetchData} />
+      <PromotionModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSave={fetchData}
+        storeId={storeId}
+      />
     </div>
   );
 };
