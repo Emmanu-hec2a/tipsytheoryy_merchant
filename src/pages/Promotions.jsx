@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { partner } from '../api';
 import { Ticket, Plus, Calendar, Trash2, X, Save, TrendingUp, Clock, Tag } from 'lucide-react';
 
-const PromotionModal = ({ isOpen, onClose, onSave, storeId }) => {
+const PromotionModal = ({ isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -42,7 +42,7 @@ const PromotionModal = ({ isOpen, onClose, onSave, storeId }) => {
     e.preventDefault();
     setLoading(true);
 
-    const payload = { ...formData, store: storeId };
+    const payload = { ...formData };
     if (discountType === 'percentage') {
         payload.discount_amount = null;
     } else {
@@ -161,21 +161,10 @@ const Promotions = () => {
   const [promotions, setPromotions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
-  const [storeId, setStoreId] = useState(null);
 
   useEffect(() => {
     fetchData();
-    fetchStoreId();
   }, []);
-
-  const fetchStoreId = async () => {
-    try {
-      const { data } = await partner.checkStatus();
-      setStoreId(data.store_id);
-    } catch (err) {
-      console.error('Failed to fetch store context');
-    }
-  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -257,12 +246,7 @@ const Promotions = () => {
           })
         )}
       </div>
-      <PromotionModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSave={fetchData}
-        storeId={storeId}
-      />
+      <PromotionModal isOpen={modalOpen} onClose={() => setModalOpen(false)} onSave={fetchData} />
     </div>
   );
 };
