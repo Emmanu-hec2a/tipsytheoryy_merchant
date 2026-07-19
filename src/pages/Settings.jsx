@@ -9,6 +9,7 @@ import {
 import { partner } from '../api';
 import SoftGate from '../components/SoftGate';
 import { legalTexts } from '../constants/legalTexts';
+import { SettingsSkeleton } from '../components/Skeleton';
 
 const SettingsTab = ({ label, icon: Icon, active, onClick }) => (
   <button
@@ -167,7 +168,7 @@ const Settings = () => {
     { label: 'Legal & About', icon: FileText },
   ];
 
-  if (loading) return <div className="p-20 text-center text-slate-400 font-medium">Loading store settings...</div>;
+  if (loading) return <SettingsSkeleton />;
 
   return (
     <div className="max-w-6xl mx-auto space-y-5">

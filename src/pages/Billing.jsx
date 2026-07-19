@@ -6,6 +6,7 @@ import {
   FileText, RefreshCw, Wine, X, Smartphone, ShieldCheck, ShieldAlert
 } from 'lucide-react';
 import { partner } from '../api';
+import { BillingSkeleton } from '../components/Skeleton';
 
 const PaymentModal = ({ isOpen, onClose, onConfirm, plan, price, loading }) => {
   const [phone, setPhone] = useState('');
@@ -192,7 +193,7 @@ const Billing = () => {
     }
   };
 
-  if (loading) return <div className="p-20 text-center text-slate-400 text-xs font-medium">Loading billing...</div>;
+  if (loading) return <BillingSkeleton />;
 
   const currentPrice = store?.plan === 'pro' ? '5,000' : '3,000';
   const isActive = store?.subscription_active;

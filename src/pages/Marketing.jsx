@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { partner } from '../api';
 import SoftGate from '../components/SoftGate';
+import { MarketingSkeleton } from '../components/Skeleton';
 
 const MarketingStat = ({ title, value, icon: Icon, color }) => (
   <div className="bg-white dark:bg-slate-900 p-3.5 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex items-center justify-between transition-all hover:shadow-md">
@@ -105,7 +106,7 @@ const Marketing = () => {
     }
   };
 
-  if (loading) return <div className="p-20 text-center text-slate-400 dark:text-slate-500 text-xs font-medium">Loading tools...</div>;
+  if (loading) return <MarketingSkeleton />;
 
   return (
     <div className="space-y-5 pb-8">
@@ -188,13 +189,27 @@ const Marketing = () => {
                </div>
 
                <div className="mt-6 pt-4 border-t border-slate-50 dark:border-slate-800">
-                  <h4 className="text-[8px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">Recent Activities</h4>
+                  <div className="flex items-center justify-between mb-3">
+                     <h4 className="text-[8px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Recent Activities</h4>
+                     {!stats.can_blast && (
+                        <span className="flex items-center gap-1 text-[8px] font-bold text-orange-500 uppercase tracking-widest">
+                           <Clock size={10} /> Cooldown Active
+                        </span>
+                     )}
+                  </div>
                   <div className="space-y-2">
                      {stats.recent_blasts.length > 0 ? (
                        stats.recent_blasts.map(blast => (
-                        <div key={blast.id} className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                           <span className="text-[11px] text-slate-600 dark:text-slate-300 font-medium truncate max-w-[150px]">{blast.message}</span>
-                           <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase">{new Date(blast.created_at).toLocaleDateString()}</span>
+                        <div key={blast.id} className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-800 rounded-lg group">
+                           <div className="flex flex-col gap-0.5 min-w-0 flex-1 mr-4">
+                              <span className="text-[11px] text-slate-600 dark:text-slate-300 font-medium truncate">{blast.message}</span>
+                              <div className="flex items-center gap-2">
+                                 <span className="text-[8px] font-bold text-slate-400 dark:text-slate-500 uppercase">{new Date(blast.created_at).toLocaleDateString()}</span>
+                                 <span className="w-1 h-1 rounded-full bg-slate-200 dark:bg-slate-700"></span>
+                                 <span className="text-[8px] font-bold text-primary uppercase">Reach: {blast.target_count || 0}</span>
+                              </div>
+                           </div>
+                           <CheckCircle2 size={12} className="text-green-500 shrink-0" />
                         </div>
                        ))
                      ) : (

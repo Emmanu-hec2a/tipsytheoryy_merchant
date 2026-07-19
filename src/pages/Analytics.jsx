@@ -20,6 +20,7 @@ import {
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import SoftGate from '../components/SoftGate';
 import { partner } from '../api';
+import { AnalyticsSkeleton } from '../components/Skeleton';
 
 ChartJS.register(
   CategoryScale, LinearScale, PointElement, LineElement,
@@ -103,7 +104,7 @@ const Analytics = () => {
     }
   };
 
-  if (loading && !store) return <div className="p-20 text-center text-slate-400 text-xs font-medium">Loading reports...</div>;
+  if (loading && !store) return <AnalyticsSkeleton />;
 
   return (
     <div className="space-y-6 pb-8">
