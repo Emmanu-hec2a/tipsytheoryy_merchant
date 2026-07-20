@@ -3,9 +3,10 @@ import {
   Search, Plus, Download, Edit2, Trash2,
   ChevronLeft, ChevronRight, Wine, X,
   Upload, CheckCircle2, AlertCircle, Save, ImageIcon,
-  LayoutGrid
+  LayoutGrid, Crown
 } from 'lucide-react';
 import { partner } from '../api';
+import SoftGate from '../components/SoftGate';
 
 const StatusToggle = ({ active, onToggle, loading }) => (
   <button
@@ -82,7 +83,7 @@ const CategoryModal = ({ isOpen, onClose, category, onSave }) => {
   );
 };
 
-const ProductModal = ({ isOpen, onClose, product, onSave }) => {
+const ProductModal = ({ isOpen, onClose, product, onSave, isPro }) => {
   const [formData, setFormData] = useState({
     name: '',
     category_name: '',
@@ -323,6 +324,30 @@ const ProductModal = ({ isOpen, onClose, product, onSave }) => {
                  <StatusToggle active={formData.is_available} onToggle={() => setFormData({...formData, is_available: !formData.is_available})} />
                  <p className="text-xs font-bold text-slate-700 dark:text-slate-300">In Stock</p>
               </div>
+
+              {/* New Arrival Toggle with SoftGate */}
+              <div className="flex items-center justify-between p-3.5 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl">
+                 <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-xl ${isPro ? 'bg-primary/10 text-primary' : 'bg-slate-100 text-slate-400'}`}>
+                       <Crown size={14} />
+                    </div>
+                    <div>
+                       <p className="text-xs font-bold text-slate-900 dark:text-white leading-none mb-1">Mark as New Arrival</p>
+                       <p className="text-[8px] text-slate-500 font-medium">Broadcast to your customers</p>
+                    </div>
+                 </div>
+                 {isPro ? (
+                    <StatusToggle
+                      active={formData.is_new_arrival}
+                      onToggle={() => setFormData({...formData, is_new_arrival: !formData.is_new_arrival})}
+                    />
+                 ) : (
+                    <div className="flex items-center gap-2">
+                       <span className="text-[8px] font-black text-primary bg-primary/10 px-1.5 py-0.5 rounded uppercase tracking-tighter">PRO</span>
+                       <StatusToggle active={false} onToggle={() => {}} loading={true} />
+                    </div>
+                 )}
+              </div>
            </div>
         </form>
 
@@ -351,10 +376,21 @@ const Products = () => {
 
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [isPro, setIsPro] = useState(false);
 
   useEffect(() => {
     fetchData();
+    fetchStorePlan();
   }, []);
+
+  const fetchStorePlan = async () => {
+    try {
+      const { data } = await partner.getSettings();
+      setIsPro(data.plan === 'pro');
+    } catch (err) {
+      console.error('Failed to fetch plan');
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -516,7 +552,7 @@ const Products = () => {
         </div>
       </div>
 
-      <ProductModal isOpen={productModalOpen} onClose={() => setProductModalOpen(false)} product={editingProduct} onSave={fetchData} />
+      <ProductModal isOpen={productModalOpen} onClose={() => setProductModalOpen(false)} product={editingProduct} onSave={fetchData} isPro={isPro} />
       <CategoryModal isOpen={categoryModalOpen} onClose={() => setCategoryModalOpen(false)} category={editingCategory} onSave={fetchData} />
     </div>
   );

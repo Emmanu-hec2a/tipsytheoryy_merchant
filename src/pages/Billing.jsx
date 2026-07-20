@@ -296,12 +296,12 @@ const Billing = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
            <PlanCard
             plan="base" price="3,000"
-            features={['Order Mgmt', 'Basic Analytics', 'Standard Support', '1% Plat. Fee']}
+            features={['Order Management', 'Basic Product List', 'Inventory Alerts', 'Standard Analytics']}
             current={store?.plan === 'base'} isActive={isActive} onUpgrade={openPaymentFlow} loading={actionLoading}
            />
            <PlanCard
             plan="pro" price="5,000"
-            features={['Priority Ranking', 'Elite Visibility', 'Marketing Suite', 'Demographics', '2.5% Fee']}
+            features={['Smart Promotions', 'New Arrival Broadcasts', 'Elite Customer Insights', 'Marketing Suite', 'Priority Visibility']}
             current={store?.plan === 'pro'} isActive={isActive} onUpgrade={openPaymentFlow} loading={actionLoading}
            />
            <PlanCard plan="enterprise" />

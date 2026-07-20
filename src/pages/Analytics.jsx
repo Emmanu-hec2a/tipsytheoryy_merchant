@@ -189,17 +189,24 @@ const Analytics = () => {
           <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm min-h-[250px]">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Demographics</h3>
               <div className="space-y-5">
-                {[ { label: 'New', val: 0, color: 'bg-primary' }, { label: 'Returning', val: 0, color: 'bg-accent' } ].map((item, i) => (
+                {[
+                  { label: 'New', val: summary.demographics?.new_percent || 0, color: 'bg-primary' },
+                  { label: 'Returning', val: summary.demographics?.returning_percent || 0, color: 'bg-accent' }
+                ].map((item, i) => (
                   <div key={i} className="space-y-1.5">
                       <div className="flex justify-between text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                         <span>{item.label}</span>
                         <span>{item.val}%</span>
                       </div>
                       <div className="w-full h-1.5 bg-slate-50 dark:bg-slate-800 rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full ${item.color}`} style={{ width: `${item.val}%` }} />
+                        <div className={`h-full rounded-full ${item.color} transition-all duration-1000`} style={{ width: `${item.val}%` }} />
                       </div>
                   </div>
                 ))}
+              </div>
+              <div className="mt-8 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mb-1">Total Reach</p>
+                 <p className="text-lg font-black text-slate-900 dark:text-white">{summary.demographics?.total_customers?.toLocaleString() || 0} <span className="text-[9px] text-slate-500 font-bold uppercase ml-1">Customers</span></p>
               </div>
           </div>
         </SoftGate>

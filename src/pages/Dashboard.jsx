@@ -39,7 +39,10 @@ const Dashboard = () => {
           partner.getOrders()
         ]);
         setStats(statsRes.data);
-        setRecentOrders(ordersRes.data.slice(0, 5));
+
+        // Handle paginated response for recent orders
+        const ordersData = ordersRes.data.results || ordersRes.data || [];
+        setRecentOrders(ordersData.slice(0, 5));
       } catch (err) {
         console.error('Failed to fetch dashboard data:', err);
         setError('Failed to load dashboard data. Please check your connection.');
