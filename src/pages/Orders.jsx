@@ -234,6 +234,59 @@ const OrderDetailSidebar = ({ orderId, onClose, onUpdate }) => {
             </div>
           )}
         </div>
+
+        {/* Numbered Pagination UI */}
+        {!loading && totalPages > 1 && (
+          <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/30 dark:bg-slate-900/30">
+            <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+              Showing <span className="text-primary">{orders.length}</span> of {totalOrders} Orders
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 mr-2">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Page {currentPage} of {totalPages}</span>
+              </div>
+
+              <div className="flex items-center gap-1 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-1 rounded-xl shadow-sm">
+                <button
+                  onClick={() => handlePageChange(1)}
+                  disabled={currentPage === 1}
+                  className="p-1.5 text-slate-400 hover:text-primary disabled:opacity-30 transition-colors"
+                  title="First Page"
+                >
+                  <ChevronLeft size={16} strokeWidth={3} />
+                  <ChevronLeft size={16} strokeWidth={3} className="-ml-2.5" />
+                </button>
+
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="p-1.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg disabled:opacity-30 transition-all"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="p-1.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg disabled:opacity-30 transition-all"
+                >
+                  <ChevronRight size={18} />
+                </button>
+
+                <button
+                  onClick={() => handlePageChange(totalPages)}
+                  disabled={currentPage === totalPages}
+                  className="p-1.5 text-slate-400 hover:text-primary disabled:opacity-30 transition-colors"
+                  title="Last Page"
+                >
+                  <ChevronRight size={16} strokeWidth={3} />
+                  <ChevronRight size={16} strokeWidth={3} className="-ml-2.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
@@ -246,23 +299,48 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
+
   const tabs = ['All', 'Pending', 'Confirmed', 'Processing', 'Delivered', 'Cancelled'];
 
   useEffect(() => {
-    fetchOrders();
+    setCurrentPage(1); // Reset to page 1 when tab changes
+    fetchOrders(1);
   }, [activeTab]);
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (page = 1) => {
     setLoading(true);
     try {
       const { data } = await partner.getOrders({
-        status: activeTab === 'All' ? '' : activeTab.toLowerCase()
+        status: activeTab === 'All' ? '' : activeTab.toLowerCase(),
+        page: page
       });
-      setOrders(data || []);
+
+      // Handle Paginated Response
+      if (data.results) {
+        setOrders(data.results);
+        setTotalOrders(data.count);
+        // Calculate total pages (assuming 15 items per page from backend)
+        setTotalPages(Math.ceil(data.count / 15));
+      } else {
+        setOrders(data || []);
+        setTotalOrders(data.length || 0);
+        setTotalPages(1);
+      }
     } catch (err) {
       console.error('Failed to fetch orders');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+      fetchOrders(newPage);
     }
   };
 
@@ -292,6 +370,59 @@ const Orders = () => {
             <Download size={16} /> Export
           </button>
         </div>
+
+        {/* Numbered Pagination UI */}
+        {!loading && totalPages > 1 && (
+          <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/30 dark:bg-slate-900/30">
+            <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+              Showing <span className="text-primary">{orders.length}</span> of {totalOrders} Orders
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 mr-2">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Page {currentPage} of {totalPages}</span>
+              </div>
+
+              <div className="flex items-center gap-1 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-1 rounded-xl shadow-sm">
+                <button
+                  onClick={() => handlePageChange(1)}
+                  disabled={currentPage === 1}
+                  className="p-1.5 text-slate-400 hover:text-primary disabled:opacity-30 transition-colors"
+                  title="First Page"
+                >
+                  <ChevronLeft size={16} strokeWidth={3} />
+                  <ChevronLeft size={16} strokeWidth={3} className="-ml-2.5" />
+                </button>
+
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="p-1.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg disabled:opacity-30 transition-all"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="p-1.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg disabled:opacity-30 transition-all"
+                >
+                  <ChevronRight size={18} />
+                </button>
+
+                <button
+                  onClick={() => handlePageChange(totalPages)}
+                  disabled={currentPage === totalPages}
+                  className="p-1.5 text-slate-400 hover:text-primary disabled:opacity-30 transition-colors"
+                  title="Last Page"
+                >
+                  <ChevronRight size={16} strokeWidth={3} />
+                  <ChevronRight size={16} strokeWidth={3} className="-ml-2.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
@@ -362,6 +493,59 @@ const Orders = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Numbered Pagination UI */}
+        {!loading && totalPages > 1 && (
+          <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/30 dark:bg-slate-900/30">
+            <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+              Showing <span className="text-primary">{orders.length}</span> of {totalOrders} Orders
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 mr-2">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Page {currentPage} of {totalPages}</span>
+              </div>
+
+              <div className="flex items-center gap-1 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-1 rounded-xl shadow-sm">
+                <button
+                  onClick={() => handlePageChange(1)}
+                  disabled={currentPage === 1}
+                  className="p-1.5 text-slate-400 hover:text-primary disabled:opacity-30 transition-colors"
+                  title="First Page"
+                >
+                  <ChevronLeft size={16} strokeWidth={3} />
+                  <ChevronLeft size={16} strokeWidth={3} className="-ml-2.5" />
+                </button>
+
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="p-1.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg disabled:opacity-30 transition-all"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="p-1.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg disabled:opacity-30 transition-all"
+                >
+                  <ChevronRight size={18} />
+                </button>
+
+                <button
+                  onClick={() => handlePageChange(totalPages)}
+                  disabled={currentPage === totalPages}
+                  className="p-1.5 text-slate-400 hover:text-primary disabled:opacity-30 transition-colors"
+                  title="Last Page"
+                >
+                  <ChevronRight size={16} strokeWidth={3} />
+                  <ChevronRight size={16} strokeWidth={3} className="-ml-2.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <OrderDetailSidebar
