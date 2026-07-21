@@ -3,7 +3,7 @@ import {
   CreditCard, Calendar, History, ArrowUpRight,
   CheckCircle2, Clock, AlertTriangle, Wallet,
   ChevronRight, Download, AlertCircle, Store,
-  FileText, RefreshCw, Wine, X, Smartphone, ShieldCheck, ShieldAlert
+  FileText, RefreshCw, Wine, X, Smartphone, ShieldCheck, ShieldAlert, MessageSquare
 } from 'lucide-react';
 import { partner } from '../api';
 import { BillingSkeleton } from '../components/Skeleton';
@@ -71,21 +71,29 @@ const PaymentModal = ({ isOpen, onClose, onConfirm, plan, price, loading }) => {
 
 const PlanCard = ({ plan, current, isActive, price, features, onUpgrade, loading }) => {
   const isPro = plan === 'pro';
-  const isEnterprise = plan === 'enterprise';
+  const isEnterprise = plan === 'enterprise' || plan === 'custom';
 
-  if (isEnterprise) {
+  if (plan === 'enterprise') {
     return (
-      <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 p-5 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-all">
-        <div className="w-10 h-10 bg-slate-50 dark:bg-slate-800 text-slate-400 rounded-xl flex items-center justify-center mb-3">
+      <div className={`bg-white dark:bg-slate-900 rounded-[2rem] border p-5 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-all ${current ? 'border-primary ring-1 ring-primary' : 'border-slate-100 dark:border-slate-800'}`}>
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${current ? 'bg-primary-light dark:bg-primary/20 text-primary' : 'bg-slate-50 dark:bg-slate-800 text-slate-400'}`}>
           <Store size={20} />
         </div>
         <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-widest mb-1">Enterprise</h4>
         <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-4 px-2">
-          Custom solutions for franchises.
+          {current ? 'Your current high-performance plan.' : 'Custom solutions for franchises.'}
         </p>
-        <button className="w-full py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 text-[10px] font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all mt-auto">
-          Contact Sales
-        </button>
+        {!current && (
+          <button
+            onClick={() => window.open(`https://wa.me/254700000000?text=I'm interested in the Tipsy Enterprise Plan for my business`, '_blank')}
+            className="w-full py-2 rounded-xl border border-primary/30 text-primary text-[10px] font-bold hover:bg-primary/5 transition-all mt-auto flex items-center justify-center gap-2"
+          >
+            <MessageSquare size={14} /> Contact Sales
+          </button>
+        )}
+        {current && (
+           <div className="w-full py-2 rounded-xl bg-primary/10 text-primary text-[10px] font-bold mt-auto uppercase">Active Plan</div>
+        )}
       </div>
     );
   }
@@ -304,7 +312,11 @@ const Billing = () => {
             features={['Smart Promotions', 'New Arrival Broadcasts', 'Elite Customer Insights', 'Marketing Suite', 'Priority Visibility']}
             current={store?.plan === 'pro'} isActive={isActive} onUpgrade={openPaymentFlow} loading={actionLoading}
            />
-           <PlanCard plan="enterprise" />
+           <PlanCard
+            plan="enterprise"
+            current={store?.plan === 'enterprise' || store?.plan === 'custom'}
+            isActive={isActive}
+           />
         </div>
       </div>
 

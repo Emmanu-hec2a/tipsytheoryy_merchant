@@ -161,7 +161,7 @@ const Marketing = () => {
              </div>
           </div>
 
-          <SoftGate isGated={store?.plan !== 'pro'} featureName="Blast Notifications" planRequired="Pro">
+          <SoftGate isGated={!['pro', 'enterprise', 'custom'].includes(store?.plan)} featureName="Blast Notifications" planRequired="Pro">
             <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
                <div className="flex items-center gap-3 mb-4">
                   <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20"><Megaphone size={16} /></div>

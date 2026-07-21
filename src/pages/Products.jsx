@@ -386,7 +386,7 @@ const Products = () => {
   const fetchStorePlan = async () => {
     try {
       const { data } = await partner.getSettings();
-      setIsPro(data.plan === 'pro');
+      setIsPro(['pro', 'enterprise', 'custom'].includes(data.plan));
     } catch (err) {
       console.error('Failed to fetch plan');
     }

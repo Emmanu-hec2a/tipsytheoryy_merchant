@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard, ShoppingBag, Wine, List, Package,
   Users, BarChart3, Wallet, Settings, LogOut, Bell,
-  Store, Menu, X, ChevronDown, Megaphone, BadgePercent,
+  Store, Menu, X, ChevronDown, Megaphone, BadgePercent, Plus,
   CreditCard, Clock, Lock, ArrowRight, Moon, Sun
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -36,14 +36,67 @@ const Layout = ({ children }) => {
   const [pendingCount, setPendingCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const [isRestricted, setIsRestricted] = useState(false);
+  const [branches, setBranches] = useState([]);
+  const [activeStore, setActiveStore] = useState(null);
+  const [isStoreSwitcherOpen, setIsStoreSwitcherOpen] = useState(false);
+  const [userInteracted, setUserInteracted] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Audio reference for new orders
+  const audioRef = React.useRef(new Audio('/sounds/new-order.mp3'));
+
   useEffect(() => {
+    const handleInteraction = () => {
+      setUserInteracted(true);
+      // Play and immediately pause to "unlock" audio for browser
+      audioRef.current.play().then(() => {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }).catch(() => {});
+      window.removeEventListener('click', handleInteraction);
+    };
+    window.addEventListener('click', handleInteraction);
+    return () => window.removeEventListener('click', handleInteraction);
+  }, []);
+
+  useEffect(() => {
+    let lastOrderCount = 0;
+    let flashInterval = null;
+    const originalTitle = document.title;
+
+    const flashTab = () => {
+      if (flashInterval) return;
+      flashInterval = setInterval(() => {
+        document.title = document.title === originalTitle ? '🔔 NEW ORDER!' : originalTitle;
+      }, 1000);
+
+      // Stop flashing when user clicks anywhere on the page
+      const stopFlashing = () => {
+        clearInterval(flashInterval);
+        flashInterval = null;
+        document.title = originalTitle;
+        window.removeEventListener('click', stopFlashing);
+      };
+      window.addEventListener('click', stopFlashing);
+    };
+
     const fetchStats = async () => {
         try {
             const { data } = await partner.getDashboardStats();
+            // Cache stats locally for plan gating in other components
+            localStorage.setItem('dashboard_stats', JSON.stringify(data));
+
+            // Logic for Audio Alert
+            if (data.pending_orders > lastOrderCount && lastOrderCount !== 0) {
+              if (userInteracted) {
+                audioRef.current.play().catch(e => console.error("Audio play failed:", e));
+              }
+              flashTab();
+            }
+
+            lastOrderCount = data.pending_orders;
             setPendingCount(data.pending_orders || 0);
             setIsRestricted(data.is_restricted || false);
 
@@ -73,9 +126,60 @@ const Layout = ({ children }) => {
         }
     };
     fetchStats();
+
+    // Fetch Branches for Enterprise Switcher
+    const fetchBranches = async () => {
+        try {
+            // First check if user is Enterprise via the stats we already have
+            const { data: stats } = await partner.getDashboardStats();
+            const isEnterprise = stats.plan === 'enterprise' || stats.plan === 'custom';
+
+            // Critical Fix: Always set active store state so UI doesn't show "Loading..."
+            const currentStoreInfo = {
+                id: stats.store_id || 'default',
+                name: stats.business_name || 'My Store',
+                shop_name: stats.business_name || 'My Store',
+                plan: stats.plan,
+                logo: stats.logo || null
+            };
+            setActiveStore(currentStoreInfo);
+
+            if (!isEnterprise) return;
+
+            const { data } = await partner.getBranches();
+            setBranches(data || []);
+
+            // Set active store from localStorage or default to the first one
+            const savedId = localStorage.getItem('active_store_id');
+            const current = data.find(s => s.id === parseInt(savedId)) || data[0];
+
+            if (current) {
+                setActiveStore(current);
+                if (!savedId) {
+                    localStorage.setItem('active_store_id', current.id);
+                }
+            }
+        } catch (err) {
+            console.error('Failed to fetch branches');
+        }
+    };
+    fetchBranches();
+
     const interval = setInterval(fetchStats, 60000); // Update every minute
     return () => clearInterval(interval);
   }, []);
+
+  const handleSwitchStore = async (store) => {
+    try {
+        localStorage.setItem('active_store_id', store.id);
+        setActiveStore(store);
+        setIsStoreSwitcherOpen(false);
+        // Refresh page to reset all cached API states with new X-Store-ID
+        window.location.reload();
+    } catch (err) {
+        alert('Failed to switch store');
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');
@@ -216,19 +320,76 @@ const Layout = ({ children }) => {
 
             <div className="h-8 w-[1px] bg-slate-200 dark:bg-slate-800" />
 
-            <Link to="/settings" className="flex items-center gap-2.5 pl-2 cursor-pointer group">
-                <div className="flex flex-col items-end hidden md:flex">
-                    <p className="text-xs font-bold text-slate-900 dark:text-white">Tipsy Theoryy Store</p>
-                    <div className="flex items-center gap-1">
-                        <div className="w-1 h-1 bg-green-500 rounded-full" />
-                        <span className="text-[9px] text-slate-500 dark:text-slate-400">Online</span>
+            <div className="relative">
+              <div
+                onClick={() => setIsStoreSwitcherOpen(!isStoreSwitcherOpen)}
+                className="flex items-center gap-2.5 pl-2 cursor-pointer group"
+              >
+                  <div className="flex flex-col items-end hidden md:flex">
+                      <p className="text-xs font-bold text-slate-900 dark:text-white truncate max-w-[120px]">
+                        {activeStore?.shop_name || activeStore?.name || 'Loading...'}
+                      </p>
+                      <div className="flex items-center gap-1">
+                          <div className="w-1 h-1 bg-green-500 rounded-full" />
+                          <span className="text-[9px] text-slate-500 dark:text-slate-400">
+                            {activeStore?.plan?.toUpperCase()} Plan
+                          </span>
+                      </div>
+                  </div>
+                  <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white font-bold group-hover:scale-105 transition-all overflow-hidden border-2 border-primary/20">
+                     {activeStore?.logo ? (
+                       <img src={activeStore.logo} alt="Logo" className="w-full h-full object-cover" />
+                     ) : (
+                       <Store size={18} />
+                     )}
+                  </div>
+                  <ChevronDown size={14} className={`text-slate-400 dark:text-slate-500 transition-transform ${isStoreSwitcherOpen ? 'rotate-180' : ''}`} />
+              </div>
+
+              {/* Enterprise Store Switcher Dropdown */}
+              {isStoreSwitcherOpen && (branches.length > 1 || activeStore?.plan === 'enterprise' || activeStore?.plan === 'custom') && (
+                <div className="absolute top-full right-0 mt-3 w-64 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-50">
+                  <div className="p-4 border-b border-slate-50 dark:border-slate-800">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Store Management</p>
+                  </div>
+
+                  {branches.length > 1 && (
+                    <div className="max-h-60 overflow-y-auto no-scrollbar">
+                      {branches.map(store => (
+                        <div
+                          key={store.id}
+                          onClick={() => handleSwitchStore(store)}
+                          className={`p-3 flex items-center gap-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-all ${activeStore?.id === store.id ? 'bg-primary-light/30 dark:bg-primary/10 border-r-4 border-primary' : ''}`}
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden flex items-center justify-center shrink-0">
+                            {store.logo ? <img src={store.logo} alt="" className="w-full h-full object-cover" /> : <Store size={14} className="text-slate-400" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[11px] font-bold text-slate-900 dark:text-white truncate">{store.shop_name || store.name}</p>
+                            <p className="text-[9px] text-slate-400 uppercase font-bold tracking-tighter">{store.plan} Plan</p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
+                  )}
+
+                  {/* Expansion Tool - Gated for Enterprise/Custom */}
+                  {['enterprise', 'custom'].includes(activeStore?.plan) && (
+                    <div className="p-2 bg-slate-50 dark:bg-slate-800 border-t border-slate-100 dark:border-slate-800">
+                      <button
+                        onClick={() => {
+                          setIsStoreSwitcherOpen(false);
+                          navigate('/settings?action=add-branch');
+                        }}
+                        className="w-full py-2.5 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/20"
+                      >
+                        <Plus size={14} /> Add New Branch
+                      </button>
+                    </div>
+                  )}
                 </div>
-                <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white font-bold group-hover:scale-105 transition-all">
-                   <Store size={18} />
-                </div>
-                <ChevronDown size={14} className="text-slate-400 dark:text-slate-500" />
-            </Link>
+              )}
+            </div>
           </div>
         </header>
 

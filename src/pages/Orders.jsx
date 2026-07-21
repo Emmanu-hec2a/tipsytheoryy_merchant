@@ -5,7 +5,7 @@ import {
   ChevronRight, ArrowUpDown, X, Phone,
   User, MapPin, Package, Clock, Star,
   Motorbike, Navigation2, CheckCircle2,
-  AlertCircle, RefreshCw
+  AlertCircle, RefreshCw, Map
 } from 'lucide-react';
 import { partner } from '../api';
 
@@ -126,12 +126,94 @@ const RiderSelectionModal = ({ isOpen, onClose, onAssign, orderId }) => {
   );
 };
 
+const RiderTrackingModal = ({ isOpen, onClose, order }) => {
+  if (!isOpen || !order) return null;
+
+  const riderLat = order.rider_latitude;
+  const riderLng = order.rider_longitude;
+  const storeLat = order.store_latitude;
+  const storeLng = order.store_longitude;
+  const customerLat = order.latitude;
+  const customerLng = order.longitude;
+
+  // Google Maps Static Map fallback or Iframe
+  // In a real production app, you'd use @react-google-maps/api
+  // For now, we'll use a professional Iframe implementation
+  const mapUrl = `https://www.google.com/maps/embed/v1/directions?key=AIzaSyAMaTGu9r9qQUnqPVHKDgdDHX6dvu0p5lM&origin=${storeLat},${storeLng}&destination=${customerLat},${customerLng}&waypoints=${riderLat},${riderLng}&mode=driving`;
+
+  return (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+      <div className="bg-white dark:bg-slate-900 w-full max-w-4xl rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col h-[80vh] animate-in zoom-in-95 duration-300 border border-slate-100 dark:border-slate-800">
+        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900">
+          <div>
+            <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
+              <Navigation2 size={20} className="text-primary fill-primary" />
+              Live Delivery Tracking
+            </h3>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Order #{order.order_number} • {order.rider_name || 'Assigned Rider'}</p>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl text-slate-400 transition-all">
+            <X size={24} />
+          </button>
+        </div>
+
+        <div className="flex-1 relative bg-slate-100 dark:bg-slate-950">
+          {!riderLat ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-10 text-center">
+              <div className="w-20 h-20 bg-white dark:bg-slate-800 rounded-3xl shadow-xl flex items-center justify-center mb-6 animate-bounce">
+                <MapPin size={40} className="text-slate-300" />
+              </div>
+              <h4 className="text-xl font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tight">Waiting for GPS...</h4>
+              <p className="text-sm text-slate-500 max-w-xs leading-relaxed">The rider hasn't shared their location yet or is currently offline.</p>
+            </div>
+          ) : (
+            <iframe
+              title="Rider Tracking"
+              width="100%"
+              height="100%"
+              frameBorder="0"
+              style={{ border: 0 }}
+              src={mapUrl}
+              allowFullScreen
+            />
+          )}
+
+          {/* Overlay Status Card */}
+          {riderLat && (
+            <div className="absolute bottom-6 left-6 right-6 md:right-auto md:w-80 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md p-5 rounded-[2rem] shadow-2xl border border-white dark:border-slate-800 animate-in slide-in-from-bottom-5 duration-500">
+               <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-black">
+                     {order.rider_name?.charAt(0) || 'R'}
+                  </div>
+                  <div>
+                     <p className="text-xs font-black text-slate-900 dark:text-white uppercase">{order.rider_name}</p>
+                     <p className="text-[10px] text-green-500 font-bold uppercase tracking-tighter">Moving toward destination</p>
+                  </div>
+               </div>
+               <div className="space-y-3">
+                  <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest">
+                     <span className="text-slate-400">Status</span>
+                     <span className="text-primary">{order.status?.replace('_', ' ')}</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                     <div className="h-full bg-primary rounded-full" style={{ width: order.status === 'picked_up' ? '60%' : '30%' }} />
+                  </div>
+               </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const OrderDetailSidebar = ({ orderId, onClose, onUpdate }) => {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAssigning, setIsAssigning] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [assignModalOpen, setAssignModalOpen] = useState(false);
+  const [trackingModalOpen, setTrackingModalOpen] = useState(false);
 
   useEffect(() => {
     if (orderId) {
@@ -328,6 +410,22 @@ const OrderDetailSidebar = ({ orderId, onClose, onUpdate }) => {
                     Assign Rider
                   </button>
                 )}
+                {['assigned', 'picked_up', 'arrived'].includes(order.status) && (
+                  <button
+                    onClick={() => {
+                      const stats = JSON.parse(localStorage.getItem('dashboard_stats') || '{}');
+                      const isEnterprise = stats.plan === 'enterprise' || stats.plan === 'custom';
+                      if (isEnterprise) {
+                        setTrackingModalOpen(true);
+                      } else {
+                        alert('Live Rider Tracking is an Enterprise feature. Please upgrade your plan.');
+                      }
+                    }}
+                    className="flex-1 py-3 bg-primary text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Map size={16} /> Track Rider
+                  </button>
+                )}
               </div>
               <div className="flex gap-2">
                 <button onClick={handlePrintInvoice} className="flex-1 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">Invoice</button>
@@ -344,6 +442,12 @@ const OrderDetailSidebar = ({ orderId, onClose, onUpdate }) => {
            onClose={() => setAssignModalOpen(false)}
            onAssign={handleAssignRider}
            orderId={orderId}
+        />
+
+        <RiderTrackingModal
+           isOpen={trackingModalOpen}
+           onClose={() => setTrackingModalOpen(false)}
+           order={order}
         />
       </div>
     </>

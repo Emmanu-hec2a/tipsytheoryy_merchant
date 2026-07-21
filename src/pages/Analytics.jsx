@@ -185,7 +185,7 @@ const Analytics = () => {
            </div>
         </div>
 
-        <SoftGate isGated={store?.plan !== 'pro'} featureName="Customer Insights" planRequired="Pro">
+        <SoftGate isGated={!['pro', 'enterprise', 'custom'].includes(store?.plan)} featureName="Customer Insights" planRequired="Pro">
           <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm min-h-[250px]">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Demographics</h3>
               <div className="space-y-5">

@@ -10,6 +10,13 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  // Production-Ready: Include Active Store ID header if present
+  const activeStoreId = localStorage.getItem('active_store_id');
+  if (activeStoreId) {
+    config.headers['X-Store-ID'] = activeStoreId;
+  }
+
   return config;
 });
 
@@ -83,6 +90,9 @@ export const partner = {
   getRevenueShare: () => cachedGet('partner/revenue-share/'),
   payRevenueShare: (data) => api.post('partner/revenue-share/', data),
   verifyRevenueGate: (data) => api.post('partner/revenue-share/gate/', data),
+  getBranches: () => api.get('partner/franchise/branches/'),
+  switchStore: (storeId) => api.post('partner/franchise/switch/', { store_id: storeId }),
+  createBranch: (data) => api.post('partner/franchise/create-branch/', data),
 };
 
 export default api;

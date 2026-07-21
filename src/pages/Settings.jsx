@@ -4,12 +4,13 @@ import {
   Save, Phone, Mail, MapPin, Clock,
   ShieldCheck, AlertCircle, CheckCircle2,
   Building2, Hash, UserCircle, Key, Lock,
-  FileText, Info, ShieldAlert, Send, Wallet
+  FileText, Info, ShieldAlert, Send, Wallet, Plus, X
 } from 'lucide-react';
 import { partner } from '../api';
 import SoftGate from '../components/SoftGate';
 import { legalTexts } from '../constants/legalTexts';
 import { SettingsSkeleton } from '../components/Skeleton';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const SettingsTab = ({ label, icon: Icon, active, onClick }) => (
   <button
@@ -30,6 +31,28 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   const [saveLoading, setSaveLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [showAddBranch, setShowAddBranch] = useState(false);
+  const [branchForm, setBranchForm] = useState({
+    name: '',
+    address_string: '',
+    latitude: 0,
+    longitude: 0,
+    phone: '',
+    delivery_radius_km: 7
+  });
+  const [branchLoading, setBranchLoading] = useState(false);
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const query = new URLSearchParams(location.search);
+    if (query.get('action') === 'add-branch') {
+      setShowAddBranch(true);
+      // Clean up URL
+      navigate('/settings', { replace: true });
+    }
+  }, [location]);
 
   // State for all settings
   const [formData, setFormData] = useState({
@@ -162,6 +185,41 @@ const Settings = () => {
     } finally {
       setSaveLoading(false);
     }
+  };
+
+  const handleCreateBranch = async (e) => {
+    e.preventDefault();
+    setBranchLoading(true);
+    try {
+      await partner.createBranch(branchForm);
+      setMessage({ type: 'success', text: 'New branch created successfully! Switch to it in the header.' });
+      setShowAddBranch(false);
+      // Refresh page to update switcher
+      window.location.reload();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Failed to create branch');
+    } finally {
+      setBranchLoading(false);
+    }
+  };
+
+  const captureBranchLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation not supported');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition((pos) => {
+      setBranchForm({
+        ...branchForm,
+        latitude: parseFloat(pos.coords.latitude.toFixed(6)),
+        longitude: parseFloat(pos.coords.longitude.toFixed(6)),
+        // Auto-fill address if empty to satisfy 'required' field
+        address_string: branchForm.address_string || "Captured Location (GPS)"
+      });
+      alert('Location captured!');
+    }, (err) => {
+      alert("Error capturing location: " + err.message);
+    });
   };
 
   const tabs = [
@@ -354,7 +412,7 @@ const Settings = () => {
                     </div>
                   </div>
 
-                  <SoftGate isGated={formData.plan === 'base'} featureName="Direct M-Pesa Integration" planRequired="Pro">
+                  <SoftGate isGated={!['pro', 'enterprise', 'custom'].includes(formData.plan)} featureName="Direct M-Pesa Integration" planRequired="Pro">
                     <div className="space-y-4 px-1">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -655,6 +713,70 @@ const Settings = () => {
           </div>
         </div>
       </div>
+
+      {/* Add Branch Modal */}
+      {showAddBranch && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-slate-100 dark:border-slate-800">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Add New Branch</h3>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Enterprise Feature</p>
+              </div>
+              <button onClick={() => setShowAddBranch(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl text-slate-400">
+                <X size={24} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateBranch} className="p-6 space-y-4">
+               <div>
+                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Branch Name</label>
+                  <input
+                    required type="text" className="input-field py-2.5 text-xs font-medium dark:bg-slate-800 dark:border-slate-700 dark:text-white" placeholder="e.g. Tipsy Westlands"
+                    value={branchForm.name} onChange={e => setBranchForm({...branchForm, name: e.target.value})}
+                  />
+               </div>
+               <div>
+                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Phone</label>
+                  <input
+                    required type="tel" className="input-field py-2.5 text-xs font-medium dark:bg-slate-800 dark:border-slate-700 dark:text-white" placeholder="+254..."
+                    value={branchForm.phone} onChange={e => setBranchForm({...branchForm, phone: e.target.value})}
+                  />
+               </div>
+               <div>
+                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Physical Address</label>
+                  <div className="flex gap-2">
+                    <input
+                      required type="text" className="input-field py-2.5 text-xs font-medium flex-1 dark:bg-slate-800 dark:border-slate-700 dark:text-white" placeholder="Street, Building..."
+                      value={branchForm.address_string} onChange={e => setBranchForm({...branchForm, address_string: e.target.value})}
+                    />
+                    <button type="button" onClick={captureBranchLocation} className="bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-primary hover:text-white transition-all">
+                      <MapPin size={18} />
+                    </button>
+                  </div>
+                  {branchForm.latitude !== 0 && (
+                    <p className="text-[9px] text-green-500 font-bold mt-1.5">GPS: {branchForm.latitude}, {branchForm.longitude}</p>
+                  )}
+               </div>
+               <div>
+                  <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Delivery Radius (KM)</label>
+                  <input
+                    required type="number" className="input-field py-2.5 text-xs font-medium dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                    value={branchForm.delivery_radius_km} onChange={e => setBranchForm({...branchForm, delivery_radius_km: e.target.value})}
+                  />
+               </div>
+
+               <button
+                disabled={branchLoading}
+                type="submit"
+                className="w-full bg-primary text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all mt-4"
+               >
+                 {branchLoading ? 'Creating...' : 'Create Branch'}
+               </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
