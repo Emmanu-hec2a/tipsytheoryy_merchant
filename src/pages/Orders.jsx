@@ -32,11 +32,106 @@ const FilterTab = ({ label, active, onClick, count }) => (
   </button>
 );
 
+const RiderSelectionModal = ({ isOpen, onClose, onAssign, orderId }) => {
+  const [riders, setRiders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchRiders();
+    }
+  }, [isOpen]);
+
+  const fetchRiders = async () => {
+    setLoading(true);
+    try {
+      const { data } = await partner.getNearbyRiders();
+      setRiders(data || []);
+    } catch (err) {
+      console.error('Failed to fetch nearby riders');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+      <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-300">
+        <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">Select Rider</h3>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Available nearby</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-slate-400"><X size={20} /></button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
+          {loading ? (
+            [...Array(4)].map((_, i) => (
+              <div key={i} className="h-20 bg-slate-50 dark:bg-slate-800 animate-pulse rounded-2xl" />
+            ))
+          ) : riders.length === 0 ? (
+            <div className="py-12 text-center">
+              <Motorbike size={32} className="mx-auto text-slate-200 mb-3" />
+              <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">No riders online nearby</p>
+            </div>
+          ) : (
+            riders.map((rider, index) => (
+              <div
+                key={rider.id}
+                className="group p-4 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl flex items-center justify-between hover:border-primary/40 hover:shadow-lg transition-all"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-black text-xs">
+                      {rider.username?.charAt(0).toUpperCase()}
+                    </div>
+                    {index < 3 && (
+                      <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center shadow-md">
+                        <Star size={10} fill="currentColor" />
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-slate-900 dark:text-white leading-tight">{rider.username}</h4>
+                    <div className="flex items-center gap-2 mt-1">
+                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter flex items-center gap-1">
+                          <Navigation2 size={8} className="text-primary fill-primary" /> {rider.distance_km}km
+                       </span>
+                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter flex items-center gap-1">
+                          <Package size={8} className="text-blue-500" /> {rider.total_deliveries} drops
+                       </span>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => onAssign(rider.id)}
+                  className="bg-primary text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all"
+                >
+                  Assign
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 flex items-center gap-3">
+           <AlertCircle size={16} className="text-slate-400" />
+           <p className="text-[9px] text-slate-500 font-medium leading-relaxed">Riders are ranked based on proximity, rating, and experience.</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const OrderDetailSidebar = ({ orderId, onClose, onUpdate }) => {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAssigning, setIsAssigning] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
 
   useEffect(() => {
     if (orderId) {
@@ -76,13 +171,16 @@ const OrderDetailSidebar = ({ orderId, onClose, onUpdate }) => {
   };
 
   const handleAssignRider = async (riderId) => {
+    setUpdating(true);
     try {
       await partner.assignRider(orderId, riderId);
-      setIsAssigning(false);
+      setAssignModalOpen(false);
       fetchDetail();
       onUpdate();
     } catch (err) {
       alert('Failed to assign rider');
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -123,6 +221,12 @@ const OrderDetailSidebar = ({ orderId, onClose, onUpdate }) => {
                 <div className="text-right">
                   <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Total</p>
                   <p className="text-xl font-extrabold text-primary">KES {parseFloat(order.total).toLocaleString()}</p>
+                  {parseFloat(order.wallet_used || 0) > 0 && (
+                    <div className="flex flex-col items-end mt-1">
+                       <span className="text-[7px] font-black text-white bg-accent px-1.5 py-0.5 rounded-full uppercase tracking-tighter mb-1">Tipsy Wallet Payment</span>
+                       <p className="text-[9px] font-bold text-accent uppercase tracking-tighter">KSh {parseFloat(order.wallet_used).toLocaleString()}</p>
+                    </div>
+                  )}
                   {parseFloat(order.discount_amount || 0) > 0 && (
                     <p className="text-[8px] font-bold text-green-600 uppercase tracking-tighter">Saved KSh {parseFloat(order.discount_amount).toLocaleString()}</p>
                   )}
@@ -218,7 +322,7 @@ const OrderDetailSidebar = ({ orderId, onClose, onUpdate }) => {
                 )}
                 {['confirmed', 'processing'].includes(order.status) && (
                   <button
-                    onClick={() => setIsAssigning(true)}
+                    onClick={() => setAssignModalOpen(true)}
                     className="flex-1 py-3 bg-orange-500 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-orange-500/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
                   >
                     Assign Rider
@@ -235,58 +339,12 @@ const OrderDetailSidebar = ({ orderId, onClose, onUpdate }) => {
           )}
         </div>
 
-        {/* Numbered Pagination UI */}
-        {!loading && totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/30 dark:bg-slate-900/30">
-            <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-              Showing <span className="text-primary">{orders.length}</span> of {totalOrders} Orders
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5 mr-2">
-                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Page {currentPage} of {totalPages}</span>
-              </div>
-
-              <div className="flex items-center gap-1 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-1 rounded-xl shadow-sm">
-                <button
-                  onClick={() => handlePageChange(1)}
-                  disabled={currentPage === 1}
-                  className="p-1.5 text-slate-400 hover:text-primary disabled:opacity-30 transition-colors"
-                  title="First Page"
-                >
-                  <ChevronLeft size={16} strokeWidth={3} />
-                  <ChevronLeft size={16} strokeWidth={3} className="-ml-2.5" />
-                </button>
-
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="p-1.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg disabled:opacity-30 transition-all"
-                >
-                  <ChevronLeft size={18} />
-                </button>
-
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="p-1.5 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg disabled:opacity-30 transition-all"
-                >
-                  <ChevronRight size={18} />
-                </button>
-
-                <button
-                  onClick={() => handlePageChange(totalPages)}
-                  disabled={currentPage === totalPages}
-                  className="p-1.5 text-slate-400 hover:text-primary disabled:opacity-30 transition-colors"
-                  title="Last Page"
-                >
-                  <ChevronRight size={16} strokeWidth={3} />
-                  <ChevronRight size={16} strokeWidth={3} className="-ml-2.5" />
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <RiderSelectionModal
+           isOpen={assignModalOpen}
+           onClose={() => setAssignModalOpen(false)}
+           onAssign={handleAssignRider}
+           orderId={orderId}
+        />
       </div>
     </>
   );

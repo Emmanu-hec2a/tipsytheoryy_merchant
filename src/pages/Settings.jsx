@@ -4,7 +4,7 @@ import {
   Save, Phone, Mail, MapPin, Clock,
   ShieldCheck, AlertCircle, CheckCircle2,
   Building2, Hash, UserCircle, Key, Lock,
-  FileText, Info, ShieldAlert, Send
+  FileText, Info, ShieldAlert, Send, Wallet
 } from 'lucide-react';
 import { partner } from '../api';
 import SoftGate from '../components/SoftGate';
@@ -66,6 +66,8 @@ const Settings = () => {
     base_distance_km: 2,
     extra_distance_surcharge: 30,
 
+    accepts_wallet_payments: true,
+
     // Notifications (Frontend state, usually handled by push/fcm token)
     notifications_enabled: true,
     email_notifications: true,
@@ -112,6 +114,8 @@ const Settings = () => {
         mpesa_callback_url: data.mpesa_callback_url || '',
 
         telegram_chat_id: data.telegram_chat_id || '',
+
+        accepts_wallet_payments: data.accepts_wallet_payments ?? true,
 
         plan: data.plan || 'base'
       });
@@ -395,6 +399,27 @@ const Settings = () => {
                       </div>
                     </div>
                   </SoftGate>
+                </div>
+
+                {/* Tipsy Wallet Control */}
+                <div className="space-y-4 pt-5 border-t border-slate-50 dark:border-slate-800">
+                   <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-2xl border border-orange-100 dark:border-orange-900/30 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                         <div className="w-10 h-10 bg-white dark:bg-slate-700 rounded-xl shadow-sm flex items-center justify-center">
+                            <Wallet size={20} className="text-orange-600 dark:text-orange-400" />
+                         </div>
+                         <div>
+                            <h4 className="text-sm font-bold text-slate-900 dark:text-white">Accept Tipsy Wallet</h4>
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Allow customers to pay using internal credit.</p>
+                         </div>
+                      </div>
+                      <button
+                        onClick={() => setFormData({...formData, accepts_wallet_payments: !formData.accepts_wallet_payments})}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${formData.accepts_wallet_payments ? 'bg-orange-500' : 'bg-slate-200 dark:bg-slate-800'}`}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.accepts_wallet_payments ? 'translate-x-6' : 'translate-x-1'}`} />
+                      </button>
+                   </div>
                 </div>
               </div>
             )}

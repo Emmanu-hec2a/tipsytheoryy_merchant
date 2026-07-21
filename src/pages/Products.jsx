@@ -3,7 +3,7 @@ import {
   Search, Plus, Download, Edit2, Trash2,
   ChevronLeft, ChevronRight, Wine, X,
   Upload, CheckCircle2, AlertCircle, Save, ImageIcon,
-  LayoutGrid, Crown
+  LayoutGrid, Crown, Wallet
 } from 'lucide-react';
 import { partner } from '../api';
 import SoftGate from '../components/SoftGate';

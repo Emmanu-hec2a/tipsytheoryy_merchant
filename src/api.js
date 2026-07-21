@@ -29,38 +29,58 @@ export const auth = {
   signup: (data) => api.post('auth/partner/signup/', data),
 };
 
+// Simple In-Memory Cache for GET Requests
+const cache = new Map();
+const CACHE_DURATION = 30000; // 30 seconds
+
+const cachedGet = async (url, params = {}) => {
+  const cacheKey = JSON.stringify({ url, params });
+  const now = Date.now();
+
+  if (cache.has(cacheKey)) {
+    const { timestamp, data } = cache.get(cacheKey);
+    if (now - timestamp < CACHE_DURATION) {
+      return { data };
+    }
+  }
+
+  const response = await api.get(url, { params });
+  cache.set(cacheKey, { timestamp: now, data: response.data });
+  return response;
+};
+
 export const partner = {
-  checkStatus: () => api.get('partner/status/'),
-  getDashboardStats: () => api.get('partner/dashboard/stats/'),
-  getOrders: (params) => api.get('partner/orders/', { params }),
+  checkStatus: () => cachedGet('partner/status/'),
+  getDashboardStats: () => cachedGet('partner/dashboard/stats/'),
+  getOrders: (params) => api.get('partner/orders/', { params }), // Orders change frequently, don't cache
   getOrderDetail: (id) => api.get(`partner/orders/${id}/`),
   updateOrderStatus: (id, data) => api.patch(`partner/orders/${id}/`, data),
-  getOrderSummary: () => api.get('partner/orders/summary/'),
+  getOrderSummary: () => cachedGet('partner/orders/summary/'),
   getProducts: (params) => api.get('partner/menu/', { params }),
   createProduct: (data) => api.post('partner/menu/', data),
   updateProduct: (id, data) => api.patch(`partner/menu/${id}/`, data),
-  getCategories: () => api.get('partner/categories/'),
+  getCategories: () => cachedGet('partner/categories/'),
   createCategory: (data) => api.post('partner/categories/', data),
   updateCategory: (id, data) => api.patch(`partner/categories/${id}/`, data),
-  getInventoryStats: () => api.get('partner/inventory/stats/'),
-  getPromotions: () => api.get('partner/promotions/'),
+  getInventoryStats: () => cachedGet('partner/inventory/stats/'),
+  getPromotions: () => cachedGet('partner/promotions/'),
   createPromotion: (data) => api.post('partner/promotions/', data),
   deletePromotion: (id) => api.delete(`partner/promotions/${id}/`),
-  getCustomers: () => api.get('partner/customers/'),
-  getPayoutHistory: () => api.get('partner/payouts/history/'),
+  getCustomers: () => cachedGet('partner/customers/'),
+  getPayoutHistory: () => cachedGet('partner/payouts/history/'),
   getNearbyRiders: () => api.get('partner/riders/nearby/'),
   assignRider: (orderId, riderId) => api.post(`partner/orders/${orderId}/assign-rider/`, { rider_id: riderId }),
   bulkActionProducts: (data) => api.post('partner/products/bulk-action/', data),
-  getAnalyticsSummary: () => api.get('partner/analytics/'),
-  getRevenueAnalytics: (range) => api.get('partner/analytics/revenue/', { params: { range } }),
-  getTopProductsAnalytics: () => api.get('partner/analytics/top-products/'),
-  getSettings: () => api.get('partner/settings/'),
+  getAnalyticsSummary: () => cachedGet('partner/analytics/'),
+  getRevenueAnalytics: (range) => cachedGet('partner/analytics/revenue/', { range }),
+  getTopProductsAnalytics: () => cachedGet('partner/analytics/top-products/'),
+  getSettings: () => cachedGet('partner/settings/'),
   updateSettings: (data) => api.patch('partner/settings/', data),
-  getBillingHistory: () => api.get('partner/billing/history/'),
+  getBillingHistory: () => cachedGet('partner/billing/history/'),
   paySubscription: (data) => api.post('partner/billing/pay-now/', data),
   sendMarketingBlast: (data) => api.post('partner/marketing/blast/', data),
-  getMarketingStats: () => api.get('partner/marketing/stats/'),
-  getRevenueShare: () => api.get('partner/revenue-share/'),
+  getMarketingStats: () => cachedGet('partner/marketing/stats/'),
+  getRevenueShare: () => cachedGet('partner/revenue-share/'),
   payRevenueShare: (data) => api.post('partner/revenue-share/', data),
   verifyRevenueGate: (data) => api.post('partner/revenue-share/gate/', data),
 };
