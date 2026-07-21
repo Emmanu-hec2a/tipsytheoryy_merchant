@@ -13,18 +13,18 @@ const SidebarItem = ({ icon: Icon, label, path, badge, active, onClick }) => (
   <Link
     to={path}
     onClick={onClick}
-    className={`flex items-center justify-between px-3.5 py-2 rounded-xl transition-all mb-0.5 group ${
+    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all mb-1 group ${
       active
-        ? 'bg-primary-light dark:bg-primary/20 text-primary font-bold shadow-sm'
-        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
+        ? 'bg-primary text-white font-bold shadow-md shadow-primary/20 scale-[1.02]'
+        : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
     }`}
   >
-    <div className="flex items-center gap-2.5">
-      <Icon size={18} className={active ? 'text-primary' : 'group-hover:text-slate-900 dark:group-hover:text-white'} />
-      <span className="text-xs">{label}</span>
+    <div className="flex items-center gap-3">
+      <Icon size={18} className={active ? 'text-white' : 'group-hover:text-slate-900 dark:group-hover:text-white'} />
+      <span className="text-[11px] uppercase tracking-wider">{label}</span>
     </div>
     {badge > 0 && (
-      <span className="bg-primary text-white text-[9px] px-1.5 py-0.5 rounded-full">
+      <span className={`${active ? 'bg-white text-primary' : 'bg-primary text-white'} text-[9px] font-black px-1.5 py-0.5 rounded-lg`}>
         {badge}
       </span>
     )}
@@ -32,7 +32,7 @@ const SidebarItem = ({ icon: Icon, label, path, badge, active, onClick }) => (
 );
 
 const Layout = ({ children }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 1024);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
@@ -212,7 +212,7 @@ const Layout = ({ children }) => {
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 lg:w-56 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-transform duration-300 lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 lg:w-56 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex flex-col h-full p-2.5">
           <div className="flex items-center justify-between px-2 mb-5">
             <div className="flex items-center gap-2.5">
@@ -240,7 +240,11 @@ const Layout = ({ children }) => {
                 key={item.path}
                 {...item}
                 active={location.pathname === item.path}
-                onClick={() => setIsSidebarOpen(false)}
+                onClick={() => {
+                  if (window.innerWidth < 1024) {
+                    setIsSidebarOpen(false);
+                  }
+                }}
               />
             ))}
           </nav>
@@ -271,7 +275,7 @@ const Layout = ({ children }) => {
       </aside>
 
       {/* Main Content */}
-      <main className={`flex-1 transition-all w-full ${isSidebarOpen ? 'lg:pl-56' : ''}`}>
+      <main className={`flex-1 transition-all duration-300 w-full ${isSidebarOpen ? 'lg:pl-56' : 'lg:pl-0'}`}>
         {/* Topbar */}
         <header className="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 md:px-5 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
