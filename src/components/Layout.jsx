@@ -9,9 +9,10 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { partner } from '../api';
 import { useTheme } from '../context/ThemeContext';
 
-const SidebarItem = ({ icon: Icon, label, path, badge, active }) => (
+const SidebarItem = ({ icon: Icon, label, path, badge, active, onClick }) => (
   <Link
     to={path}
+    onClick={onClick}
     className={`flex items-center justify-between px-3.5 py-2 rounded-xl transition-all mb-0.5 group ${
       active
         ? 'bg-primary-light dark:bg-primary/20 text-primary font-bold shadow-sm'
@@ -31,7 +32,7 @@ const SidebarItem = ({ icon: Icon, label, path, badge, active }) => (
 );
 
 const Layout = ({ children }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
@@ -202,17 +203,35 @@ const Layout = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex transition-colors duration-300">
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 lg:hidden animate-in fade-in duration-300"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-56 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-transform lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 lg:w-56 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-transform duration-300 lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex flex-col h-full p-2.5">
-          <div className="flex items-center gap-2.5 px-2 mb-5">
-            <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
-              <Wine size={20} className="text-white" />
+          <div className="flex items-center justify-between px-2 mb-5">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center">
+                <Wine size={20} className="text-white" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-slate-900 dark:text-white leading-tight">TipsyTheoryy</h2>
+                <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">Merchant</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-white leading-tight">TipsyTheoryy</h2>
-              <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">Merchant</p>
-            </div>
+
+            {/* Close Button for Mobile */}
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              className="lg:hidden p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+            >
+              <X size={20} />
+            </button>
           </div>
 
           <nav className="flex-1 overflow-y-auto no-scrollbar">
@@ -221,6 +240,7 @@ const Layout = ({ children }) => {
                 key={item.path}
                 {...item}
                 active={location.pathname === item.path}
+                onClick={() => setIsSidebarOpen(false)}
               />
             ))}
           </nav>
@@ -251,14 +271,16 @@ const Layout = ({ children }) => {
       </aside>
 
       {/* Main Content */}
-      <main className={`flex-1 transition-all ${isSidebarOpen ? 'lg:ml-56' : ''}`}>
+      <main className={`flex-1 transition-all w-full ${isSidebarOpen ? 'lg:pl-56' : ''}`}>
         {/* Topbar */}
-        <header className="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-5 py-2.5 flex items-center justify-between">
+        <header className="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 md:px-5 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="lg:hidden text-slate-500 dark:text-slate-400">
+            <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 -ml-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">
               <Menu size={20} />
             </button>
-            <h1 className="text-base font-bold text-slate-900 dark:text-white uppercase tracking-tight">{menuItems.find(m => m.path === location.pathname)?.label || 'Dashboard'}</h1>
+            <h1 className="text-sm md:text-base font-bold text-slate-900 dark:text-white uppercase tracking-tight truncate max-w-[120px] md:max-w-none">
+              {menuItems.find(m => m.path === location.pathname)?.label || 'Dashboard'}
+            </h1>
           </div>
 
           <div className="flex items-center gap-3 relative">
