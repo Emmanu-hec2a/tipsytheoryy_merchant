@@ -183,7 +183,11 @@ const Billing = () => {
   };
 
   const openPaymentFlow = (plan) => {
-    const price = plan === 'pro' ? '5,000' : '3,000';
+    let price = '3,000';
+    if (plan === 'pro') price = '5,000';
+    else if ((plan === 'enterprise' || plan === 'custom') && store?.plan_price) {
+        price = formatPrice(store.plan_price);
+    }
     setPaymentModal({ isOpen: true, plan, price });
   };
 
@@ -203,7 +207,12 @@ const Billing = () => {
 
   if (loading) return <BillingSkeleton />;
 
-  const currentPrice = store?.plan === 'pro' ? '5,000' : '3,000';
+  const formatPrice = (price) => {
+    if (!price) return '0';
+    return parseFloat(price).toLocaleString('en-KE');
+  };
+
+  const currentPrice = formatPrice(store?.plan_price || (store?.plan === 'pro' ? 5000 : 3000));
   const isActive = store?.subscription_active;
   const billingStatus = store?.billing_status || 'unknown';
 
