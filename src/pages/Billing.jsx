@@ -324,11 +324,11 @@ const Billing = () => {
            <PlanCard
             plan="enterprise"
             features={[
+              'Includes ALL Pro Features',
               'Multi-Branch Management',
               'Consolidated Reports',
               'API & POS Integration',
-              'Priority 24/7 Support',
-              'Custom Revenue Sharing'
+              'Priority 24/7 Support'
             ]}
             current={store?.plan === 'enterprise' || store?.plan === 'custom'}
             isActive={isActive}
