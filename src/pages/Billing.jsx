@@ -72,48 +72,22 @@ const PaymentModal = ({ isOpen, onClose, onConfirm, plan, price, loading }) => {
 const PlanCard = ({ plan, current, isActive, price, features, onUpgrade, loading }) => {
   const isPro = plan === 'pro';
   const isEnterprise = plan === 'enterprise' || plan === 'custom';
-
-  if (plan === 'enterprise') {
-    return (
-      <div className={`bg-white dark:bg-slate-900 rounded-[2rem] border p-5 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-all ${current ? 'border-primary ring-1 ring-primary' : 'border-slate-100 dark:border-slate-800'}`}>
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${current ? 'bg-primary-light dark:bg-primary/20 text-primary' : 'bg-slate-50 dark:bg-slate-800 text-slate-400'}`}>
-          <Store size={20} />
-        </div>
-        <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-widest mb-1">Enterprise</h4>
-        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-4 px-2">
-          {current ? 'Your current high-performance plan.' : 'Custom solutions for franchises.'}
-        </p>
-        {!current && (
-          <button
-            onClick={() => window.open(`https://wa.me/254700000000?text=I'm interested in the Tipsy Enterprise Plan for my business`, '_blank')}
-            className="w-full py-2 rounded-xl border border-primary/30 text-primary text-[10px] font-bold hover:bg-primary/5 transition-all mt-auto flex items-center justify-center gap-2"
-          >
-            <MessageSquare size={14} /> Contact Sales
-          </button>
-        )}
-        {current && (
-           <div className="w-full py-2 rounded-xl bg-primary/10 text-primary text-[10px] font-bold mt-auto uppercase">Active Plan</div>
-        )}
-      </div>
-    );
-  }
-
   const isExpired = current && !isActive;
 
   return (
     <div className={`bg-white dark:bg-slate-900 rounded-[2rem] border p-5 flex flex-col relative transition-all ${
       current
-        ? (isExpired ? 'border-red-200 dark:border-red-900/50 ring-1 ring-red-100 dark:ring-red-900/20 bg-red-50/10' : (isPro ? 'border-orange-500 ring-1 ring-orange-500' : 'border-primary ring-1 ring-primary'))
+        ? (isExpired ? 'border-red-200 dark:border-red-900/50 ring-1 ring-red-100 dark:ring-red-900/20 bg-red-50/10' : (isEnterprise ? 'border-emerald-500 ring-1 ring-emerald-500' : (isPro ? 'border-orange-500 ring-1 ring-orange-500' : 'border-primary ring-1 ring-primary')))
         : 'border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md'
     }`}>
       <div className="flex items-center gap-3 mb-5">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isPro ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-500' : 'bg-primary-light dark:bg-primary/20 text-primary'}`}>
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isEnterprise ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500' : (isPro ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-500' : 'bg-primary-light dark:bg-primary/20 text-primary')}`}>
           <Store size={20} />
         </div>
         <div>
-          <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-widest leading-none mb-1">{plan} Plan</h4>
+          <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-widest leading-none mb-1">{plan}</h4>
           <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-tight">
-            {isPro ? 'Elite' : 'Standard'}
+            {isEnterprise ? 'Enterprise' : (isPro ? 'Elite' : 'Standard')}
           </p>
         </div>
         {isExpired && (
@@ -125,31 +99,50 @@ const PlanCard = ({ plan, current, isActive, price, features, onUpgrade, loading
 
       <div className="mb-5">
         <div className="flex items-baseline gap-1">
-          <span className="text-xl font-extrabold text-slate-900 dark:text-white">KES {price}</span>
-          <span className="text-slate-500 dark:text-slate-400 font-bold text-[10px]">/mo</span>
+          {isEnterprise ? (
+            <span className="text-xl font-extrabold text-slate-900 dark:text-white uppercase tracking-tight">Custom Plan</span>
+          ) : (
+            <>
+              <span className="text-xl font-extrabold text-slate-900 dark:text-white">KES {price}</span>
+              <span className="text-slate-500 dark:text-slate-400 font-bold text-[10px]">/mo</span>
+            </>
+          )}
         </div>
       </div>
 
       <ul className="space-y-2 mb-6 flex-1">
         {features.map((feature, i) => (
           <li key={i} className="flex items-start gap-2.5 text-[11px] font-medium text-slate-600 dark:text-slate-400">
-            <CheckCircle2 size={14} className="text-slate-300 dark:text-slate-600 shrink-0 mt-0.5" />
+            <CheckCircle2 size={14} className={`${current ? 'text-primary' : 'text-slate-300 dark:text-slate-600'} shrink-0 mt-0.5`} />
             {feature}
           </li>
         ))}
       </ul>
 
-      <button
-        disabled={loading}
-        onClick={() => onUpgrade(plan)}
-        className={`w-full py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${
-          current
-            ? (isExpired ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : (isPro ? 'bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500' : 'bg-primary text-white opacity-50'))
-            : (isPro ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'bg-primary text-white shadow-lg shadow-primary/10')
-        } hover:scale-[1.02] active:scale-95`}
-      >
-        {isExpired ? 'Renew Now' : current ? 'Active' : loading ? '...' : `Switch to ${plan}`}
-      </button>
+      {isEnterprise ? (
+          current ? (
+            <div className="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 text-[10px] font-black uppercase text-center">Active Plan</div>
+          ) : (
+            <button
+              onClick={() => window.open(`https://wa.me/254700000000?text=I'm interested in the Tipsy Enterprise Plan for my business`, '_blank')}
+              className="w-full py-2.5 rounded-xl border border-emerald-500/30 text-emerald-500 text-[10px] font-bold hover:bg-emerald-500/5 transition-all flex items-center justify-center gap-2 uppercase tracking-widest"
+            >
+              <MessageSquare size={14} /> Contact Sales
+            </button>
+          )
+      ) : (
+        <button
+            disabled={loading}
+            onClick={() => onUpgrade(plan)}
+            className={`w-full py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all ${
+            current
+                ? (isExpired ? 'bg-red-600 text-white shadow-lg shadow-red-600/20' : (isPro ? 'bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500' : 'bg-primary text-white opacity-50'))
+                : (isPro ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'bg-primary text-white shadow-lg shadow-primary/10')
+            } hover:scale-[1.02] active:scale-95`}
+        >
+            {isExpired ? 'Renew Now' : current ? 'Active' : loading ? '...' : `Switch to ${plan}`}
+        </button>
+      )}
     </div>
   );
 };
