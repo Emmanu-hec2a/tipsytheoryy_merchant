@@ -41,7 +41,9 @@ const cache = new Map();
 const CACHE_DURATION = 30000; // 30 seconds
 
 const cachedGet = async (url, params = {}) => {
-  const cacheKey = JSON.stringify({ url, params });
+  // Production-Ready: Cache must be scoped to the active store to avoid data leaks during switching
+  const activeStoreId = localStorage.getItem('active_store_id') || 'default';
+  const cacheKey = JSON.stringify({ url, params, activeStoreId });
   const now = Date.now();
 
   if (cache.has(cacheKey)) {

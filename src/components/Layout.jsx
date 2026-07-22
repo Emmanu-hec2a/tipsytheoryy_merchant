@@ -145,18 +145,17 @@ const Layout = ({ children }) => {
             };
             setActiveStore(currentStoreInfo);
 
-            if (!isEnterprise) return;
-
+            // Critical Fix: Always attempt to fetch branches for partners to keep switcher alive
             const { data } = await partner.getBranches();
             setBranches(data || []);
 
-            // Set active store from localStorage or default to the first one
+            // Set active store from localStorage or default to the one returned by stats
             const savedId = localStorage.getItem('active_store_id');
-            const current = data.find(s => s.id === parseInt(savedId)) || data[0];
+            const current = data.find(s => s.id === parseInt(savedId)) || currentStoreInfo;
 
             if (current) {
                 setActiveStore(current);
-                if (!savedId) {
+                if (!savedId && current.id !== 'default') {
                     localStorage.setItem('active_store_id', current.id);
                 }
             }
@@ -373,7 +372,7 @@ const Layout = ({ children }) => {
               </div>
 
               {/* Enterprise Store Switcher Dropdown */}
-              {isStoreSwitcherOpen && (branches.length > 1 || activeStore?.plan === 'enterprise' || activeStore?.plan === 'custom') && (
+              {isStoreSwitcherOpen && (branches.length > 1 || ['enterprise', 'custom'].includes(activeStore?.plan)) && (
                 <div className="absolute top-full right-0 mt-3 w-64 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-50">
                   <div className="p-4 border-b border-slate-50 dark:border-slate-800">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Store Management</p>
