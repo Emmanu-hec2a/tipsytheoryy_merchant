@@ -323,8 +323,16 @@ const Billing = () => {
            />
            <PlanCard
             plan="enterprise"
+            features={[
+              'Multi-Branch Management',
+              'Consolidated Reports',
+              'API & POS Integration',
+              'Priority 24/7 Support',
+              'Custom Revenue Sharing'
+            ]}
             current={store?.plan === 'enterprise' || store?.plan === 'custom'}
             isActive={isActive}
+            onUpgrade={() => window.open('https://tipsytheoryy.com/contact-sales', '_blank')}
            />
         </div>
       </div>
