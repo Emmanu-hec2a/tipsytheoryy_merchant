@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Wine, ChevronLeft, ShieldCheck, RefreshCw } from 'lucide-react';
+import { Mail, Lock, ChevronLeft, ShieldCheck, RefreshCw } from 'lucide-react';
+import OtpInput from 'react-otp-input';
 import { auth } from '../api';
 
 const ForgotPassword = () => {
@@ -129,23 +130,38 @@ const ForgotPassword = () => {
             </form>
           ) : (
             <form onSubmit={handleReset} className="space-y-6">
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">6-Digit Verification Code</label>
-                <div className="relative">
-                  <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
-                  <input
-                    type="text"
-                    required
-                    maxLength="6"
-                    className="w-full bg-white border border-slate-200 rounded-2xl py-4 pl-12 pr-4 text-sm font-bold text-slate-900 tracking-[0.5em] focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-slate-300"
-                    placeholder="000000"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                  />
-                </div>
+              <div className="flex flex-col items-center">
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 self-start ml-1">6-Digit Verification Code</label>
+
+                <OtpInput
+                  value={otp}
+                  onChange={setOtp}
+                  numInputs={6}
+                  renderSeparator={<span className="mx-1"></span>}
+                  renderInput={(props) => <input {...props} />}
+                  shouldAutoFocus
+                  inputType="number"
+                  inputStyle={{
+                    width: '3.5rem',
+                    height: '4rem',
+                    margin: '0 0.25rem',
+                    fontSize: '1.5rem',
+                    fontWeight: '900',
+                    borderRadius: '1rem',
+                    border: '1px solid #e2e8f0',
+                    backgroundColor: 'white',
+                    color: '#0f172a',
+                    outline: 'none',
+                    transition: 'all 0.2s ease',
+                  }}
+                  focusStyle={{
+                    border: '2px solid #F97316',
+                    boxShadow: '0 0 0 4px rgba(249, 115, 22, 0.1)',
+                  }}
+                />
               </div>
 
-              <div>
+              <div className="pt-4">
                 <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">New Password</label>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
@@ -177,7 +193,7 @@ const ForgotPassword = () => {
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || otp.length < 6}
                 className="w-full bg-primary hover:bg-primary-dark text-white font-black py-4 rounded-2xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 uppercase tracking-widest text-xs"
               >
                 {loading ? <RefreshCw className="animate-spin" size={20} /> : 'Reset Password'}
