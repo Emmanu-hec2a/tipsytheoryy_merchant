@@ -34,6 +34,8 @@ api.interceptors.response.use(
 export const auth = {
   login: (credentials) => api.post('auth/partner/login/', credentials),
   signup: (data) => api.post('auth/partner/signup/', data),
+  requestPasswordReset: (email) => api.post('auth/password-reset/request/', { email }),
+  verifyPasswordReset: (data) => api.post('auth/password-reset/verify/', data),
 };
 
 // Simple In-Memory Cache for GET Requests

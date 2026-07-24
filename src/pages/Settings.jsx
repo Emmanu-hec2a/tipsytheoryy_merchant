@@ -357,48 +357,8 @@ const Settings = () => {
             {/* Payment Settings Tab */}
             {activeTab === 'Payment Settings' && (
               <div className="space-y-8">
-                {/* Bank Payouts Section */}
-                <div className="space-y-5">
-                  <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-start gap-3">
-                    <div className="w-10 h-10 bg-white dark:bg-slate-700 rounded-xl shadow-sm flex items-center justify-center shrink-0">
-                      <Building2 size={20} className="text-slate-600 dark:text-slate-300" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-900 dark:text-white">Payout Destination</h4>
-                      <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Where you receive settlements.</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4 px-1">
-                    <div>
-                      <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Bank Name</label>
-                      <input
-                        type="text" className="input-field py-2.5 text-xs font-medium dark:bg-slate-800 dark:border-slate-700 dark:text-white" placeholder="e.g. Equity Bank, KCB"
-                        value={formData.bank_name} onChange={(e) => setFormData({...formData, bank_name: e.target.value})}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Account Name</label>
-                        <input
-                          type="text" className="input-field py-2.5 text-xs font-medium dark:bg-slate-800 dark:border-slate-700 dark:text-white" placeholder="Business Name"
-                          value={formData.bank_account_name} onChange={(e) => setFormData({...formData, bank_account_name: e.target.value})}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Account Number</label>
-                        <input
-                          type="text" className="input-field py-2.5 font-mono text-xs dark:bg-slate-800 dark:border-slate-700 dark:text-white" placeholder="0123456789"
-                          value={formData.bank_account_number} onChange={(e) => setFormData({...formData, bank_account_number: e.target.value})}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
                 {/* M-Pesa Daraja Section */}
-                <div className="space-y-5 pt-5 border-t border-slate-50 dark:border-slate-800">
+                <div className="space-y-5">
                   <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-900/30 flex items-start gap-3">
                     <div className="w-10 h-10 bg-white dark:bg-slate-700 rounded-xl shadow-sm flex items-center justify-center shrink-0">
                       <ShieldCheck size={20} className="text-emerald-600 dark:text-emerald-400" />
@@ -412,51 +372,49 @@ const Settings = () => {
                     </div>
                   </div>
 
-                  <SoftGate isGated={!['pro', 'enterprise', 'custom'].includes(formData.plan)} featureName="Direct M-Pesa Integration" planRequired="Pro">
-                    <div className="space-y-4 px-1">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Shortcode</label>
-                          <div className="relative">
-                            <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={16} />
-                            <input
-                              type="text" className="input-field pl-10 py-2.5 text-xs font-medium dark:bg-slate-800 dark:border-slate-700 dark:text-white" placeholder="174379"
-                              value={formData.mpesa_shortcode} onChange={(e) => setFormData({...formData, mpesa_shortcode: e.target.value})}
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">LNM Passkey</label>
+                  <div className="space-y-4 px-1">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Shortcode</label>
+                        <div className="relative">
+                          <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={16} />
                           <input
-                            type="password" className="input-field py-2.5 text-xs font-medium dark:bg-slate-800 dark:border-slate-700 dark:text-white" placeholder="Passkey"
-                            value={formData.mpesa_passkey} onChange={(e) => setFormData({...formData, mpesa_passkey: e.target.value})}
+                            type="text" className="input-field pl-10 py-2.5 text-xs font-medium dark:bg-slate-800 dark:border-slate-700 dark:text-white" placeholder="174379"
+                            value={formData.mpesa_shortcode} onChange={(e) => setFormData({...formData, mpesa_shortcode: e.target.value})}
                           />
                         </div>
                       </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Consumer Key</label>
-                          <input
-                            type="password" className="input-field py-2.5 text-xs font-medium dark:bg-slate-800 dark:border-slate-700 dark:text-white" placeholder="Key"
-                            value={formData.mpesa_consumer_key} onChange={(e) => setFormData({...formData, mpesa_consumer_key: e.target.value})}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Consumer Secret</label>
-                          <input
-                            type="password" className="input-field py-2.5 text-xs font-medium dark:bg-slate-800 dark:border-slate-700 dark:text-white" placeholder="Secret"
-                            value={formData.mpesa_consumer_secret} onChange={(e) => setFormData({...formData, mpesa_consumer_secret: e.target.value})}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="bg-emerald-50/50 dark:bg-emerald-900/10 p-3 rounded-xl border border-emerald-100 dark:border-emerald-900/20 flex gap-2">
-                         <AlertCircle size={14} className="text-emerald-600 dark:text-emerald-500 shrink-0 mt-0.5" />
-                         <p className="text-[10px] text-emerald-800 dark:text-emerald-400 font-medium">Credentials are protected by AES-256 encryption.</p>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">LNM Passkey</label>
+                        <input
+                          type="password" className="input-field py-2.5 text-xs font-medium dark:bg-slate-800 dark:border-slate-700 dark:text-white" placeholder="Passkey"
+                          value={formData.mpesa_passkey} onChange={(e) => setFormData({...formData, mpesa_passkey: e.target.value})}
+                        />
                       </div>
                     </div>
-                  </SoftGate>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Consumer Key</label>
+                        <input
+                          type="password" className="input-field py-2.5 text-xs font-medium dark:bg-slate-800 dark:border-slate-700 dark:text-white" placeholder="Key"
+                          value={formData.mpesa_consumer_key} onChange={(e) => setFormData({...formData, mpesa_consumer_key: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Consumer Secret</label>
+                        <input
+                          type="password" className="input-field py-2.5 text-xs font-medium dark:bg-slate-800 dark:border-slate-700 dark:text-white" placeholder="Secret"
+                          value={formData.mpesa_consumer_secret} onChange={(e) => setFormData({...formData, mpesa_consumer_secret: e.target.value})}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="bg-emerald-50/50 dark:bg-emerald-900/10 p-3 rounded-xl border border-emerald-100 dark:border-emerald-900/20 flex gap-2">
+                        <AlertCircle size={14} className="text-emerald-600 dark:text-emerald-500 shrink-0 mt-0.5" />
+                        <p className="text-[10px] text-emerald-800 dark:text-emerald-400 font-medium">Credentials are protected by AES-256 encryption.</p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Tipsy Wallet Control */}

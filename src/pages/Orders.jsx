@@ -126,19 +126,41 @@ const RiderSelectionModal = ({ isOpen, onClose, onAssign, orderId }) => {
   );
 };
 
-const RiderTrackingModal = ({ isOpen, onClose, order }) => {
-  if (!isOpen || !order) return null;
+const RiderTrackingModal = ({ isOpen, onClose, orderId }) => {
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const riderLat = order.rider_latitude;
-  const riderLng = order.rider_longitude;
-  const storeLat = order.store_latitude;
-  const storeLng = order.store_longitude;
-  const customerLat = order.latitude;
-  const customerLng = order.longitude;
+  useEffect(() => {
+    let interval;
+    if (isOpen && orderId) {
+      fetchTrackingData();
+      // 📡 Real-time Polling: Update position every 10 seconds
+      interval = setInterval(fetchTrackingData, 10000);
+    }
+    return () => clearInterval(interval);
+  }, [isOpen, orderId]);
 
-  // Google Maps Static Map fallback or Iframe
-  // In a real production app, you'd use @react-google-maps/api
-  // For now, we'll use a professional Iframe implementation
+  const fetchTrackingData = async () => {
+    try {
+      const { data } = await partner.getOrderDetail(orderId);
+      setOrder(data);
+    } catch (err) {
+      console.error('Failed to poll tracking data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  const riderLat = order?.rider_latitude;
+  const riderLng = order?.rider_longitude;
+  const storeLat = order?.store_latitude;
+  const storeLng = order?.store_longitude;
+  const customerLat = order?.latitude;
+  const customerLng = order?.longitude;
+
+  // Professional Map URL with all markers
   const mapUrl = `https://www.google.com/maps/embed/v1/directions?key=AIzaSyAMaTGu9r9qQUnqPVHKDgdDHX6dvu0p5lM&origin=${storeLat},${storeLng}&destination=${customerLat},${customerLng}&waypoints=${riderLat},${riderLng}&mode=driving`;
 
   return (
@@ -150,7 +172,7 @@ const RiderTrackingModal = ({ isOpen, onClose, order }) => {
               <Navigation2 size={20} className="text-primary fill-primary" />
               Live Delivery Tracking
             </h3>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Order #{order.order_number} • {order.rider_name || 'Assigned Rider'}</p>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Order #{order?.order_number || '...'} • {order?.rider_name || 'Assigned Rider'}</p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl text-slate-400 transition-all">
             <X size={24} />
@@ -158,6 +180,12 @@ const RiderTrackingModal = ({ isOpen, onClose, order }) => {
         </div>
 
         <div className="flex-1 relative bg-slate-100 dark:bg-slate-950">
+          {loading && !order ? (
+             <div className="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm z-20">
+                <RefreshCw size={32} className="text-primary animate-spin" />
+             </div>
+          ) : null}
+
           {!riderLat ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center p-10 text-center">
               <div className="w-20 h-20 bg-white dark:bg-slate-800 rounded-3xl shadow-xl flex items-center justify-center mb-6 animate-bounce">
@@ -187,16 +215,19 @@ const RiderTrackingModal = ({ isOpen, onClose, order }) => {
                   </div>
                   <div>
                      <p className="text-xs font-black text-slate-900 dark:text-white uppercase">{order.rider_name}</p>
-                     <p className="text-[10px] text-green-500 font-bold uppercase tracking-tighter">Moving toward destination</p>
+                     <p className="text-[10px] text-green-500 font-bold uppercase tracking-tighter flex items-center gap-1">
+                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-ping" />
+                        Live tracking active
+                     </p>
                   </div>
                </div>
                <div className="space-y-3">
                   <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest">
-                     <span className="text-slate-400">Status</span>
+                     <span className="text-slate-400">Current Task</span>
                      <span className="text-primary">{order.status?.replace('_', ' ')}</span>
                   </div>
                   <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                     <div className="h-full bg-primary rounded-full" style={{ width: order.status === 'picked_up' ? '60%' : '30%' }} />
+                     <div className="h-full bg-primary rounded-full transition-all duration-1000" style={{ width: order.status === 'picked_up' ? '60%' : order.status === 'arrived' ? '90%' : '30%' }} />
                   </div>
                </div>
             </div>
@@ -288,7 +319,7 @@ const OrderDetailSidebar = ({ orderId, onClose, onUpdate }) => {
           ) : !order ? (
             <div className="p-6 text-center text-red-500 font-bold text-sm">Failed to load order.</div>
           ) : (
-            <div className="p-6 space-y-6 pb-32">
+            <div className="p-6 space-y-6 pb-48">
               <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800">
                 <div>
                   <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Status</p>
@@ -391,7 +422,7 @@ const OrderDetailSidebar = ({ orderId, onClose, onUpdate }) => {
           )}
 
           {!loading && order && (
-            <div className="absolute bottom-0 left-0 w-full p-4 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2 z-20">
+            <div className="sticky bottom-0 left-0 w-full p-4 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 flex flex-col gap-2 z-20">
               <div className="flex gap-2">
                 {order.status === 'pending' && (
                   <button
@@ -412,15 +443,7 @@ const OrderDetailSidebar = ({ orderId, onClose, onUpdate }) => {
                 )}
                 {['assigned', 'picked_up', 'arrived'].includes(order.status) && (
                   <button
-                    onClick={() => {
-                      const stats = JSON.parse(localStorage.getItem('dashboard_stats') || '{}');
-                      const isEnterprise = stats.plan === 'enterprise' || stats.plan === 'custom';
-                      if (isEnterprise) {
-                        setTrackingModalOpen(true);
-                      } else {
-                        alert('Live Rider Tracking is an Enterprise feature. Please upgrade your plan.');
-                      }
-                    }}
+                    onClick={() => setTrackingModalOpen(true)}
                     className="flex-1 py-3 bg-primary text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
                   >
                     <Map size={16} /> Track Rider
@@ -447,7 +470,7 @@ const OrderDetailSidebar = ({ orderId, onClose, onUpdate }) => {
         <RiderTrackingModal
            isOpen={trackingModalOpen}
            onClose={() => setTrackingModalOpen(false)}
-           order={order}
+           orderId={orderId}
         />
       </div>
     </>
