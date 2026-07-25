@@ -165,9 +165,14 @@ const Layout = ({ children }) => {
     };
     fetchBranches();
 
-    const interval = setInterval(fetchStats, 60000); // Update every minute
+    const interval = setInterval(fetchStats, 30000); // Update every 30 seconds
     return () => clearInterval(interval);
-  }, []);
+  }, [userInteracted]);
+
+  const handleMarkAllRead = () => {
+    setNotifications([]);
+    setPendingCount(0); // Optional: also clear the badge
+  };
 
   const handleSwitchStore = async (store) => {
     try {
@@ -339,7 +344,12 @@ const Layout = ({ children }) => {
                         ))
                     )}
                 </div>
-                <button className="w-full py-4 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">Mark all as read</button>
+                <button
+                  onClick={handleMarkAllRead}
+                  className="w-full py-4 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-700 transition-all"
+                >
+                  Mark all as read
+                </button>
               </div>
             )}
 
