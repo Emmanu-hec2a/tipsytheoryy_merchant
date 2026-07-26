@@ -73,27 +73,6 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-5">
-      {/* ⚠️ Payout Overdue Alert */}
-      {stats?.has_unpaid_overdue && (
-        <div className="bg-orange-600 p-4 rounded-3xl text-white shadow-xl shadow-orange-600/20 flex items-center justify-between animate-pulse">
-           <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                 <AlertCircle size={20} className="text-white" />
-              </div>
-              <div>
-                 <h4 className="text-sm font-black uppercase tracking-widest">Payout Overdue</h4>
-                 <p className="text-[10px] opacity-80 font-bold">You have unpaid revenue share from previous weeks.</p>
-              </div>
-           </div>
-           <Link
-             to="/revenue-sharing"
-             className="bg-white text-orange-600 px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg"
-           >
-             Pay Now
-           </Link>
-        </div>
-      )}
-
       {/* Welcome Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
