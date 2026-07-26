@@ -99,7 +99,7 @@ const Layout = ({ children }) => {
 
             lastOrderCount = data.pending_orders;
             setPendingCount(data.pending_orders || 0);
-            setIsRestricted(data.is_restricted || false);
+            setIsRestricted(false); // Temporarily disabled: data.is_restricted || false
 
             // Mock some notifications based on stats
             const newNotifs = [];
@@ -198,7 +198,7 @@ const Layout = ({ children }) => {
     { icon: Package, label: 'Inventory', path: '/inventory' },
     { icon: Megaphone, label: 'Marketing', path: '/marketing' },
     { icon: BadgePercent, label: 'Promotions', path: '/promotions' },
-    { icon: Wallet, label: 'Revenue Share', path: '/revenue-sharing' },
+    // { icon: Wallet, label: 'Revenue Share', path: '/revenue-sharing' },
     { icon: Users, label: 'Customers', path: '/customers' },
     { icon: BarChart3, label: 'Reports', path: '/reports' },
     { icon: CreditCard, label: 'Billing', path: '/billing' },

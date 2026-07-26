@@ -410,12 +410,37 @@ const OrderDetailSidebar = ({ orderId, onClose, onUpdate }) => {
                         </div>
                         <div>
                           <p className="text-xs font-bold text-slate-900 dark:text-white">{item.product_name}</p>
-                          <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Qty: {item.quantity}</p>
+                          <div className="flex items-center gap-2">
+                             <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Qty: {item.quantity}</p>
+                             <span className="text-[8px] px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded font-bold">@ KES {parseFloat(item.price_at_order).toLocaleString()}</span>
+                          </div>
                         </div>
                       </div>
                       <p className="text-xs font-bold text-primary">KES {parseFloat(item.subtotal).toLocaleString()}</p>
                     </div>
                   ))}
+
+                  {/* Summary Breakdown for Transparency */}
+                  <div className="p-4 bg-slate-50/50 dark:bg-slate-800/30 space-y-2 border-t border-slate-100 dark:border-slate-800">
+                     <div className="flex justify-between items-center text-[10px] font-bold">
+                        <span className="text-slate-500 uppercase">Items Total</span>
+                        <span className="text-slate-900 dark:text-white">KES {parseFloat(order.total - order.delivery_fee + (parseFloat(order.discount_amount) || 0)).toLocaleString()}</span>
+                     </div>
+                     <div className="flex justify-between items-center text-[10px] font-bold">
+                        <span className="text-slate-500 uppercase">Delivery Fee</span>
+                        <span className="text-primary">KES {parseFloat(order.delivery_fee).toLocaleString()}</span>
+                     </div>
+                     {parseFloat(order.discount_amount) > 0 && (
+                        <div className="flex justify-between items-center text-[10px] font-bold">
+                           <span className="text-green-600 uppercase">Discount</span>
+                           <span className="text-green-600">- KES {parseFloat(order.discount_amount).toLocaleString()}</span>
+                        </div>
+                     )}
+                     <div className="pt-2 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center text-xs font-black">
+                        <span className="text-slate-900 dark:text-white uppercase">Grand Total</span>
+                        <span className="text-primary">KES {parseFloat(order.total).toLocaleString()}</span>
+                     </div>
+                  </div>
                 </div>
               </section>
             </div>
