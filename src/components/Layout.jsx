@@ -3,7 +3,7 @@ import {
   LayoutDashboard, ShoppingBag, Wine, List, Package,
   Users, BarChart3, Wallet, Settings, LogOut, Bell,
   Store, Menu, X, ChevronDown, Megaphone, BadgePercent, Plus,
-  CreditCard, Clock, Lock, ArrowRight, Moon, Sun
+  CreditCard, Clock, Lock, ArrowRight, Moon, Sun, Navigation
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { partner } from '../api';
@@ -200,6 +200,7 @@ const Layout = ({ children }) => {
     { icon: BadgePercent, label: 'Promotions', path: '/promotions' },
     // { icon: Wallet, label: 'Revenue Share', path: '/revenue-sharing' },
     { icon: Users, label: 'Customers', path: '/customers' },
+    { icon: Navigation, label: 'Rider Payouts', path: '/rider-settlements' },
     { icon: BarChart3, label: 'Reports', path: '/reports' },
     { icon: CreditCard, label: 'Billing', path: '/billing' },
     { icon: Settings, label: 'Settings', path: '/settings' },

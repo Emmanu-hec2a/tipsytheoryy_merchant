@@ -97,6 +97,8 @@ export const partner = {
   getBranches: () => api.get('partner/franchise/branches/'),
   switchStore: (storeId) => api.post('partner/franchise/switch/', { store_id: storeId }),
   createBranch: (data) => api.post('partner/franchise/create-branch/', data),
+  getRiderSettlements: () => api.get('partner/rider-settlements/'),
+  settleRiderWeek: (id, data) => api.post(`partner/rider-settlements/${id}/settle/`, data),
 };
 
 export default api;

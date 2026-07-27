@@ -17,6 +17,7 @@ import RevenueSharing from './pages/RevenueSharing';
 import PendingApproval from './pages/PendingApproval';
 import Marketing from './pages/Marketing';
 import Layout from './components/Layout';
+import RiderSettlements from './pages/RiderSettlements';
 import { partner } from './api';
 
 function App() {
@@ -119,6 +120,14 @@ function App() {
           isAuthenticated ? (
             isApproved ? (
               <Layout><RevenueSharing /></Layout>
+            ) : <Navigate to="/pending-approval" replace />
+          ) : <Navigate to="/login" replace />
+        } />
+
+        <Route path="/rider-settlements" element={
+          isAuthenticated ? (
+            isApproved ? (
+              <Layout><RiderSettlements /></Layout>
             ) : <Navigate to="/pending-approval" replace />
           ) : <Navigate to="/login" replace />
         } />
