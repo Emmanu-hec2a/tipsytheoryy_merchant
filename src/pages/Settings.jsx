@@ -167,8 +167,28 @@ const Settings = () => {
         setTimeout(() => setMessage({ type: '', text: '' }), 3000);
       },
       (error) => {
+        console.error("Geolocation Error:", error);
         setLocationStatus('error');
-        setMessage({ type: 'error', text: 'Failed to capture location.' });
+        let errorText = 'Failed to capture location.';
+
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            errorText = 'Location permission denied. Please enable GPS and allow browser access.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorText = 'Location unavailable. Ensure your GPS is active and has a signal.';
+            break;
+          case error.TIMEOUT:
+            errorText = 'Location request timed out. Please try again.';
+            break;
+        }
+
+        setMessage({ type: 'error', text: errorText });
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
       }
     );
   };
