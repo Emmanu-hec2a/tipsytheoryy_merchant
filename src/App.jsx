@@ -18,6 +18,7 @@ import PendingApproval from './pages/PendingApproval';
 import Marketing from './pages/Marketing';
 import Layout from './components/Layout';
 import RiderSettlements from './pages/RiderSettlements';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import { partner } from './api';
 
 function App() {
@@ -131,6 +132,8 @@ function App() {
             ) : <Navigate to="/pending-approval" replace />
           ) : <Navigate to="/login" replace />
         } />
+
+        <Route path="/privacy" element={<PrivacyPolicy />} />
 
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="*" element={<div className="p-20 text-center">404 - Page Not Found</div>} />
