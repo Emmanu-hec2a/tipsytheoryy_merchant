@@ -98,6 +98,8 @@ export const partner = {
   switchStore: (storeId) => api.post('partner/franchise/switch/', { store_id: storeId }),
   createBranch: (data) => api.post('partner/franchise/create-branch/', data),
   getRiderSettlements: () => api.get('partner/rider-settlements/'),
+  getLiveRiderEarnings: () => api.get('partner/rider-settlements/live/'),
+  triggerRiderSettlements: () => api.post('partner/rider-settlements/trigger/'),
   settleRiderWeek: (id, data) => api.post(`partner/rider-settlements/${id}/settle/`, data),
 };
 
