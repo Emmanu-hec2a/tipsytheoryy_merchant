@@ -152,6 +152,7 @@ const Billing = () => {
   const [store, setStore] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [paymentModal, setPaymentModal] = useState({ isOpen: false, plan: '', price: '' });
 
@@ -186,14 +187,40 @@ const Billing = () => {
 
   const handleConfirmPayment = async (phone) => {
     setActionLoading(true);
+    setMessage({ type: '', text: '' });
     try {
       const { data } = await partner.paySubscription({ phone, plan: paymentModal.plan });
-      setMessage({ type: 'success', text: data.message });
+      const checkoutId = data.checkout_request_id;
+
       setPaymentModal({ isOpen: false, plan: '', price: '' });
-      setTimeout(() => setMessage({ type: '', text: '' }), 7000);
+      setIsVerifying(true);
+
+      // Start Polling for Status
+      const checkStatus = async () => {
+        try {
+          const statusRes = await partner.getSubscriptionStatus(checkoutId);
+          if (statusRes.data.payment_status === 'success') {
+            setIsVerifying(false);
+            setMessage({ type: 'success', text: 'Subscription updated successfully! 🥂' });
+            fetchBillingData();
+            // Optional: Refresh page to clear hard locks if any
+            setTimeout(() => window.location.reload(), 2000);
+          } else if (statusRes.data.payment_status === 'failed') {
+            setIsVerifying(false);
+            setMessage({ type: 'error', text: 'M-Pesa payment failed or was cancelled.' });
+          } else {
+            // Keep polling every 3 seconds
+            setTimeout(checkStatus, 3000);
+          }
+        } catch (e) {
+          setIsVerifying(false);
+          setMessage({ type: 'error', text: 'Error checking payment status.' });
+        }
+      };
+
+      checkStatus();
     } catch (err) {
-      setMessage({ type: 'error', text: err.response?.data?.error || 'Payment failed.' });
-    } finally {
+      setMessage({ type: 'error', text: err.response?.data?.error || 'Payment initiation failed.' });
       setActionLoading(false);
     }
   };
@@ -219,6 +246,29 @@ const Billing = () => {
         price={paymentModal.price}
         loading={actionLoading}
       />
+
+      {/* 🛡️ Real-time Verification Overlay */}
+      {isVerifying && (
+        <div className="fixed inset-0 z-[200] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6">
+           <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-[2.5rem] p-10 text-center shadow-2xl space-y-8 animate-in zoom-in-95 duration-200">
+              <div className="w-20 h-20 bg-primary/10 text-primary rounded-3xl flex items-center justify-center mx-auto">
+                 <RefreshCw size={40} className="animate-spin" />
+              </div>
+              <div className="space-y-3">
+                 <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Verifying Subscription</h3>
+                 <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+                    Please complete the M-Pesa transaction on your phone. We are waiting for confirmation...
+                 </p>
+              </div>
+              <button
+                onClick={() => setIsVerifying(false)}
+                className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-red-500 transition-colors"
+              >
+                Cancel Waiting
+              </button>
+           </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
         <div className={`lg:col-span-3 rounded-[2.5rem] p-6 text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between shadow-xl border-b-[3px] ${isActive ? 'bg-primary border-orange-500' : 'bg-slate-900 border-red-500'}`}>

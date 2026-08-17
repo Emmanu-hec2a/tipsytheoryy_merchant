@@ -74,7 +74,6 @@ const RevenueSharing = () => {
   const initiatePayment = (stat) => {
     setSelectedStat(stat);
     setShowPayModal(true);
-    setMpesaCode('');
     setPayError('');
   };
 
@@ -95,23 +94,30 @@ const RevenueSharing = () => {
 
       const checkoutId = res.data.checkout_request_id;
 
+      // Close selection modal to show verification overlay
+      setShowPayModal(false);
+
       // Poll for status
       const checkStatus = async () => {
         try {
           const statusRes = await partner.getSubscriptionStatus(checkoutId);
           if (statusRes.data.payment_status === 'success') {
-            setShowPayModal(false);
             setIsVerifying(false);
             fetchData();
+            // Refresh to clear global restriction hard-locks
+            setTimeout(() => window.location.reload(), 2000);
           } else if (statusRes.data.payment_status === 'failed') {
-            setPayError('Payment failed or cancelled.');
             setIsVerifying(false);
+            setPayError('Payment failed or cancelled.');
+            setShowPayModal(true); // Re-open to allow retry
           } else {
             // Continue polling
             setTimeout(checkStatus, 3000);
           }
         } catch (e) {
           setIsVerifying(false);
+          setPayError('Error verifying payment.');
+          setShowPayModal(true);
         }
       };
       checkStatus();
@@ -250,6 +256,28 @@ const RevenueSharing = () => {
 
       {/* History Table */}
       <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-xl overflow-hidden">
+        {/* Verification Overlay for Commission */}
+        {isVerifying && !showPayModal && (
+          <div className="fixed inset-0 z-[1000] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6">
+            <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-[2.5rem] p-10 text-center shadow-2xl space-y-8 animate-in zoom-in-95 duration-200">
+                <div className="w-20 h-20 bg-primary/10 text-primary rounded-3xl flex items-center justify-center mx-auto">
+                  <RefreshCw size={40} className="animate-spin" />
+                </div>
+                <div className="space-y-3">
+                  <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Verifying Commission</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+                      We are waiting for M-Pesa confirmation. Please enter your PIN on your phone.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsVerifying(false)}
+                  className="text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-red-500 transition-colors"
+                >
+                  Cancel Waiting
+                </button>
+            </div>
+          </div>
+        )}
         <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
            <h3 className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white">Invoicing History</h3>
            <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500">Total Records: {history.length}</div>
