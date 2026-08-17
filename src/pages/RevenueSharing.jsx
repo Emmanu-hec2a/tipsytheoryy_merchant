@@ -14,6 +14,7 @@ const RevenueSharing = () => {
 
   const [data, setData] = useState(null);
   const [fetchLoading, setFetchLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const [showPayModal, setShowPayModal] = useState(false);
   const [selectedStat, setSelectedStat] = useState(null);
@@ -51,6 +52,7 @@ const RevenueSharing = () => {
 
   const fetchData = async () => {
     setFetchLoading(true);
+    setError(null);
     try {
       const [revRes, settingsRes] = await Promise.all([
         partner.getRevenueShare(),
@@ -62,7 +64,8 @@ const RevenueSharing = () => {
         setMpesaCode(settingsRes.data.phone);
       }
     } catch (err) {
-      console.error('Failed to fetch revenue data');
+      console.error('Failed to fetch revenue data', err);
+      setError('Failed to connect to billing server. Please check your internet or try again.');
     } finally {
       setFetchLoading(false);
     }
@@ -167,8 +170,19 @@ const RevenueSharing = () => {
 
   if (fetchLoading) return <div className="p-20 text-center text-slate-400 font-black uppercase tracking-widest text-[10px]">Accessing Vault...</div>;
 
+  if (error) {
+    return (
+      <div className="p-20 text-center space-y-4">
+        <AlertCircle className="mx-auto text-red-500" size={48} />
+        <p className="text-sm font-bold text-slate-900 dark:text-white">{error}</p>
+        <button onClick={fetchData} className="bg-primary text-white px-6 py-2 rounded-xl font-bold uppercase text-[10px]">Retry Connection</button>
+      </div>
+    );
+  }
+
   const current = data?.current_week;
   const history = data?.history || [];
+  const commRate = data?.commission_rate || 10;
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -178,20 +192,20 @@ const RevenueSharing = () => {
             <div className="relative z-10 space-y-8">
                <div className="flex items-center justify-between">
                   <div className="bg-white/10 px-4 py-1.5 rounded-full border border-white/10 backdrop-blur-md">
-                     <span className="text-[10px] font-black uppercase tracking-widest text-white/80">Pay-As-You-Go Commission (10%)</span>
+                     <span className="text-[10px] font-black uppercase tracking-widest text-white/80">Pay-As-You-Go Commission ({commRate}%)</span>
                   </div>
                   <Calendar size={20} className="text-white/20" />
                </div>
                <div>
                   <h3 className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Total Sales this week</h3>
                   <div className="flex items-baseline gap-2">
-                     <span className="text-4xl font-black">KSh {current?.total_liquor_sales?.toLocaleString()}</span>
+                     <span className="text-4xl font-black">KSh {current?.total_liquor_sales?.toLocaleString() || '0'}</span>
                   </div>
                </div>
                <div className="flex flex-col md:flex-row md:items-center gap-6 pt-6 border-t border-white/10">
                   <div className="flex-1">
-                     <h4 className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Commission Due (10%)</h4>
-                     <p className="text-2xl font-black text-primary">KSh {current?.partner_share?.toLocaleString()}</p>
+                     <h4 className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Commission Due ({commRate}%)</h4>
+                     <p className="text-2xl font-black text-primary">KSh {current?.partner_share?.toLocaleString() || '0'}</p>
                   </div>
                   {!current?.status || current?.status === 'unpaid' ? (
                     <button
@@ -223,7 +237,7 @@ const RevenueSharing = () => {
             </div>
             <h4 className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white">Billing Cycle</h4>
             <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-              Sales are tracked Monday to Sunday. Commission is calculated at 10% of total sales.
+              Sales are tracked Monday to Sunday. Commission is calculated at {commRate}% of total sales.
             </p>
             <div className="pt-4 border-t border-slate-50 dark:border-slate-800">
                <div className="flex items-center gap-2 text-primary font-black uppercase tracking-widest text-[10px]">
@@ -246,7 +260,7 @@ const RevenueSharing = () => {
                  <tr>
                     <th className="px-6 py-4">Billing Period</th>
                     <th className="px-6 py-4">Total Sales</th>
-                    <th className="px-6 py-4">Commission (10%)</th>
+                    <th className="px-6 py-4">Commission ({commRate}%)</th>
                     <th className="px-6 py-4">Status</th>
                     <th className="px-6 py-4">Ref Code</th>
                  </tr>
