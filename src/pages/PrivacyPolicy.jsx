@@ -101,6 +101,12 @@ Under the Kenya Data Protection Act, 2019, you have the following rights:
 
 To exercise any of these rights, contact us at support@s.tipsytheoryy.com. We will respond within 30 days.
 
+<div id="deletion" className="bg-slate-50 p-6 rounded-xl border border-slate-200 mt-8">
+    <h2 className="text-xl font-black uppercase tracking-tight mb-4">Account & Data Deletion</h2>
+    <p className="mb-4">Users can request the deletion of their account and all associated personal data by emailing our support team at <strong>support@s.tipsytheoryy.com</strong>. Please include "Account Deletion Request" in the subject line.</p>
+    <p>Upon request, we will permanently delete your profile, contact information, and saved addresses within 30 days. Please note that some transaction records may be retained for up to 7 years to comply with Kenyan tax and financial regulations.</p>
+</div>
+
 9. SECURITY
 We implement industry-standard security measures including encrypted data transmission (HTTPS/TLS), encrypted storage of sensitive credentials, access controls, and regular security reviews. No system is perfectly secure — if you suspect unauthorised access to your account, contact us immediately.
 

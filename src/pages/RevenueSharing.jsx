@@ -17,10 +17,20 @@ const RevenueSharing = () => {
 
   const [showPayModal, setShowPayModal] = useState(false);
   const [selectedStat, setSelectedStat] = useState(null);
-  const [mpesaCode, setMpesaCode] = useState('');
+  const [mpesaCode, setMpesaCode] = useState(''); // This will be used as the phone number input
   const [isVerifying, setIsVerifying] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const [payError, setPayError] = useState('');
+
+  // Auto-fill phone number from store settings
+  useEffect(() => {
+    if (isAuthenticated) {
+      const stats = JSON.parse(localStorage.getItem('dashboard_stats') || '{}');
+      // We don't have the phone directly in dashboard stats usually,
+      // but we can fetch it or use a default if available.
+      // Better yet, let's ensure it's fetched when data loads.
+    }
+  }, [isAuthenticated]);
 
   const handleAuth = async (e) => {
     e.preventDefault();
@@ -42,8 +52,15 @@ const RevenueSharing = () => {
   const fetchData = async () => {
     setFetchLoading(true);
     try {
-      const res = await partner.getRevenueShare();
-      setData(res.data);
+      const [revRes, settingsRes] = await Promise.all([
+        partner.getRevenueShare(),
+        partner.getSettings()
+      ]);
+      setData(revRes.data);
+      // Pre-fill phone number from settings
+      if (settingsRes.data?.phone) {
+        setMpesaCode(settingsRes.data.phone);
+      }
     } catch (err) {
       console.error('Failed to fetch revenue data');
     } finally {
@@ -58,43 +75,48 @@ const RevenueSharing = () => {
     setPayError('');
   };
 
-  const handleConfirmPayment = async () => {
-    if (!mpesaCode || mpesaCode.length < 6) {
-      setPayError('Please enter a valid M-Pesa Transaction Code.');
+  const handleConfirmPayment = async (phoneToUse) => {
+    const phone = phoneToUse || mpesaCode; // Reusing state or passed phone
+    if (!phone || phone.length < 10) {
+      setPayError('Please enter a valid M-Pesa Phone Number.');
       return;
     }
 
     setIsVerifying(true);
-    setCountdown(5);
-
-    // Timer logic for cancellation
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
+    setPayError('');
+    try {
+      const res = await partner.payRevenueShare({
+        stat_id: selectedStat.id,
+        phone: phone
       });
-    }, 1000);
 
-    // Simulated 5s delay for verification
-    setTimeout(async () => {
-      if (!isVerifying) return; // Case where user cancelled
+      const checkoutId = res.data.checkout_request_id;
 
-      try {
-        await partner.payRevenueShare({
-          stat_id: selectedStat.id,
-          mpesa_code: mpesaCode
-        });
-        setShowPayModal(false);
-        setIsVerifying(false);
-        fetchData();
-      } catch (err) {
-        setPayError('Failed to record payment. Please try again.');
-        setIsVerifying(false);
-      }
-    }, 5000);
+      // Poll for status
+      const checkStatus = async () => {
+        try {
+          const statusRes = await partner.getSubscriptionStatus(checkoutId);
+          if (statusRes.data.payment_status === 'success') {
+            setShowPayModal(false);
+            setIsVerifying(false);
+            fetchData();
+          } else if (statusRes.data.payment_status === 'failed') {
+            setPayError('Payment failed or cancelled.');
+            setIsVerifying(false);
+          } else {
+            // Continue polling
+            setTimeout(checkStatus, 3000);
+          }
+        } catch (e) {
+          setIsVerifying(false);
+        }
+      };
+      checkStatus();
+
+    } catch (err) {
+      setPayError(err.response?.data?.error || 'Failed to initiate STK Push.');
+      setIsVerifying(false);
+    }
   };
 
   const cancelVerification = () => {
@@ -110,8 +132,8 @@ const RevenueSharing = () => {
              <ShieldCheck size={32} />
           </div>
           <div>
-            <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Revenue Sharing Gate</h2>
-            <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mt-1">This section contains sensitive financial records.</p>
+            <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Pay As You Go Gate</h2>
+            <p className="text-xs text-slate-400 dark:text-slate-500 font-medium mt-1">This section contains sensitive financial and commission records.</p>
           </div>
 
           <form onSubmit={handleAuth} className="space-y-4">
@@ -156,19 +178,19 @@ const RevenueSharing = () => {
             <div className="relative z-10 space-y-8">
                <div className="flex items-center justify-between">
                   <div className="bg-white/10 px-4 py-1.5 rounded-full border border-white/10 backdrop-blur-md">
-                     <span className="text-[10px] font-black uppercase tracking-widest text-white/80">Active Revenue Share (40%)</span>
+                     <span className="text-[10px] font-black uppercase tracking-widest text-white/80">Pay-As-You-Go Commission (10%)</span>
                   </div>
                   <Calendar size={20} className="text-white/20" />
                </div>
                <div>
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Total Liquor Sales this week</h3>
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Total Sales this week</h3>
                   <div className="flex items-baseline gap-2">
                      <span className="text-4xl font-black">KSh {current?.total_liquor_sales?.toLocaleString()}</span>
                   </div>
                </div>
                <div className="flex flex-col md:flex-row md:items-center gap-6 pt-6 border-t border-white/10">
                   <div className="flex-1">
-                     <h4 className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Partner Payout (40%)</h4>
+                     <h4 className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">Commission Due (10%)</h4>
                      <p className="text-2xl font-black text-primary">KSh {current?.partner_share?.toLocaleString()}</p>
                   </div>
                   {!current?.status || current?.status === 'unpaid' ? (
@@ -199,13 +221,13 @@ const RevenueSharing = () => {
             <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white rounded-2xl flex items-center justify-center">
                <History size={24} />
             </div>
-            <h4 className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white">Weekly Stats</h4>
+            <h4 className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white">Billing Cycle</h4>
             <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-              Liquor sales are tracked Monday to Sunday. Every Monday at 00:00, a new bucket is created.
+              Sales are tracked Monday to Sunday. Commission is calculated at 10% of total sales.
             </p>
             <div className="pt-4 border-t border-slate-50 dark:border-slate-800">
                <div className="flex items-center gap-2 text-primary font-black uppercase tracking-widest text-[10px]">
-                  <span>40% Revenue Share Policy</span>
+                  <span>Pay-As-You-Go Policy</span>
                   <ArrowRight size={12} />
                </div>
             </div>
@@ -215,16 +237,16 @@ const RevenueSharing = () => {
       {/* History Table */}
       <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-xl overflow-hidden">
         <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-           <h3 className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white">Payout History</h3>
-           <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500">Total Weeks: {history.length}</div>
+           <h3 className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white">Invoicing History</h3>
+           <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500">Total Records: {history.length}</div>
         </div>
         <div className="overflow-x-auto">
            <table className="w-full text-left">
               <thead className="bg-slate-50 dark:bg-slate-800/50 text-[9px] uppercase font-black text-slate-400 dark:text-slate-500 tracking-widest">
                  <tr>
-                    <th className="px-6 py-4">Week Period</th>
-                    <th className="px-6 py-4">Liquor Total</th>
-                    <th className="px-6 py-4">Our Share (40%)</th>
+                    <th className="px-6 py-4">Billing Period</th>
+                    <th className="px-6 py-4">Total Sales</th>
+                    <th className="px-6 py-4">Commission (10%)</th>
                     <th className="px-6 py-4">Status</th>
                     <th className="px-6 py-4">Ref Code</th>
                  </tr>
@@ -276,7 +298,7 @@ const RevenueSharing = () => {
            <div className="max-w-xl w-full bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
               <div className="p-8 space-y-8">
                  <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Revenue Payout</h3>
+                    <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Commission Payout</h3>
                     {!isVerifying && (
                       <button onClick={() => setShowPayModal(false)} className="w-10 h-10 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all">
                         <X size={20} />
@@ -318,10 +340,10 @@ const RevenueSharing = () => {
                     </div>
 
                     <div>
-                       <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2 ml-1">M-Pesa Transaction Code</label>
+                       <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2 ml-1">M-Pesa Phone Number</label>
                        <input
                          type="text"
-                         placeholder="e.g. SGR8T..."
+                         placeholder="0712345678"
                          className="w-full bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-2xl py-4 px-5 text-sm font-black uppercase placeholder:text-slate-200 dark:placeholder:text-slate-700 text-slate-900 dark:text-white focus:border-slate-900 dark:focus:border-primary focus:ring-0 transition-all"
                          value={mpesaCode}
                          onChange={(e) => setMpesaCode(e.target.value)}
@@ -339,25 +361,25 @@ const RevenueSharing = () => {
                  <div className="space-y-3">
                     {!isVerifying ? (
                       <button
-                        onClick={handleConfirmPayment}
+                        onClick={() => handleConfirmPayment()}
                         className="w-full bg-slate-900 dark:bg-primary text-white py-5 rounded-3xl font-black uppercase tracking-widest text-xs shadow-2xl shadow-slate-900/20 dark:shadow-primary/20 hover:scale-[1.02] transition-all"
                       >
-                        Confirm & Mark as Paid
+                        Send STK Push
                       </button>
                     ) : (
                       <div className="space-y-4">
                          <div className="flex flex-col items-center justify-center py-4 space-y-3">
                             <Loader2 className="animate-spin text-primary" size={32} />
                             <div className="text-center">
-                               <p className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white">Verifying Payout</p>
-                               <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold">Confirming in {countdown} seconds...</p>
+                               <p className="text-sm font-black uppercase tracking-widest text-slate-900 dark:text-white">Waiting for M-Pesa</p>
+                               <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold">Please enter PIN on your phone...</p>
                             </div>
                          </div>
                          <button
                            onClick={cancelVerification}
                            className="w-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 py-4 rounded-3xl font-black uppercase tracking-widest text-[10px] hover:bg-red-100 dark:hover:bg-red-900/40 transition-all"
                          >
-                           I Have Not Paid (Cancel)
+                           Cancel
                          </button>
                       </div>
                     )}

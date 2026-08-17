@@ -99,7 +99,7 @@ const Layout = ({ children }) => {
 
             lastOrderCount = data.pending_orders;
             setPendingCount(data.pending_orders || 0);
-            setIsRestricted(false); // Temporarily disabled: data.is_restricted || false
+            setIsRestricted(data.is_restricted || false);
 
             // Mock some notifications based on stats
             const newNotifs = [];
@@ -198,7 +198,7 @@ const Layout = ({ children }) => {
     { icon: Package, label: 'Inventory', path: '/inventory' },
     { icon: Megaphone, label: 'Marketing', path: '/marketing' },
     { icon: BadgePercent, label: 'Promotions', path: '/promotions' },
-    // { icon: Wallet, label: 'Revenue Share', path: '/revenue-sharing' },
+    { icon: Wallet, label: 'Pay As You Go', path: '/revenue-sharing' },
     { icon: Users, label: 'Customers', path: '/customers' },
     { icon: Navigation, label: 'Rider Payouts', path: '/rider-settlements' },
     { icon: BarChart3, label: 'Reports', path: '/reports' },
@@ -450,7 +450,7 @@ const Layout = ({ children }) => {
                       to="/revenue-sharing"
                       className="w-full bg-slate-900 dark:bg-primary text-white py-5 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:scale-105 transition-all shadow-xl shadow-slate-900/20 dark:shadow-primary/20"
                     >
-                      Go to Revenue Share <ArrowRight size={16} />
+                      Go to Pay As You Go <ArrowRight size={16} />
                     </Link>
                     <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest">Store visibility: Offline</p>
                   </div>

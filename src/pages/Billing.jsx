@@ -305,21 +305,26 @@ const Billing = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
            <PlanCard
+            plan="free" price="0"
+            features={['Order Management', 'Basic Product List', 'Inventory Tracking', '10% Commission Rate']}
+            current={store?.plan === 'free'} isActive={true} onUpgrade={() => {}} loading={false}
+           />
+           <PlanCard
             plan="base" price="3,000"
-            features={['Order Management', 'Basic Product List', 'Inventory Alerts', 'Standard Analytics']}
+            features={['Everything in Free', '8% Lower Commission', 'Inventory Alerts', 'Standard Analytics']}
             current={store?.plan === 'base'} isActive={isActive} onUpgrade={openPaymentFlow} loading={actionLoading}
            />
            <PlanCard
             plan="pro" price="5,000"
-            features={['Smart Promotions', 'New Arrival Broadcasts', 'Elite Customer Insights', 'Marketing Suite', 'Priority Visibility']}
+            features={['Everything in Base', '5% Elite Commission', 'Marketing Blast', 'Smart Promotions', 'Elite Insights']}
             current={store?.plan === 'pro'} isActive={isActive} onUpgrade={openPaymentFlow} loading={actionLoading}
            />
            <PlanCard
             plan="enterprise"
             features={[
               'Includes ALL Pro Features',
+              'Negotiable Commission',
               'Multi-Branch Management',
-              'Consolidated Reports',
               'API & POS Integration',
               'Priority 24/7 Support'
             ]}
