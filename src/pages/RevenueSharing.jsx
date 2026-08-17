@@ -97,30 +97,43 @@ const RevenueSharing = () => {
       // Close selection modal to show verification overlay
       setShowPayModal(false);
 
-      // Poll for status
+      // 🛡️ RESILIENCY: Polling with Initial Delay & Max Retries
+      let attempts = 0;
+      const MAX_ATTEMPTS = 40; // ~2 minutes total
+
       const checkStatus = async () => {
+        if (attempts >= MAX_ATTEMPTS) {
+          setIsVerifying(false);
+          setPayError('Verification timed out. Please check your billing history in a moment.');
+          return;
+        }
+
         try {
           const statusRes = await partner.getSubscriptionStatus(checkoutId);
+
           if (statusRes.data.payment_status === 'success') {
             setIsVerifying(false);
             fetchData();
-            // Refresh to clear global restriction hard-locks
-            setTimeout(() => window.location.reload(), 2000);
+            setTimeout(() => window.location.reload(), 1500);
           } else if (statusRes.data.payment_status === 'failed') {
             setIsVerifying(false);
             setPayError('Payment failed or cancelled.');
-            setShowPayModal(true); // Re-open to allow retry
+            setShowPayModal(true);
           } else {
-            // Continue polling
+            // payment_status is 'pending' or null (not found yet)
+            attempts++;
             setTimeout(checkStatus, 3000);
           }
         } catch (e) {
-          setIsVerifying(false);
-          setPayError('Error verifying payment.');
-          setShowPayModal(true);
+          // 🛡️ Silent Fail: If the record isn't in DB yet, backend might return 400/404.
+          // We wait and try again instead of crashing.
+          attempts++;
+          setTimeout(checkStatus, 3000);
         }
       };
-      checkStatus();
+
+      // Initial delay of 2 seconds before first poll to allow DB write
+      setTimeout(checkStatus, 2000);
 
     } catch (err) {
       setPayError(err.response?.data?.error || 'Failed to initiate STK Push.');

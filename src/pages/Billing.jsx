@@ -195,30 +195,40 @@ const Billing = () => {
       setPaymentModal({ isOpen: false, plan: '', price: '' });
       setIsVerifying(true);
 
-      // Start Polling for Status
+      // 🛡️ RESILIENCY: Polling with Initial Delay & Silent Fails
+      let attempts = 0;
+      const MAX_ATTEMPTS = 40;
+
       const checkStatus = async () => {
+        if (attempts >= MAX_ATTEMPTS) {
+            setIsVerifying(false);
+            setMessage({ type: 'error', text: 'Verification timed out. Please refresh in a moment.' });
+            return;
+        }
+
         try {
           const statusRes = await partner.getSubscriptionStatus(checkoutId);
           if (statusRes.data.payment_status === 'success') {
             setIsVerifying(false);
             setMessage({ type: 'success', text: 'Subscription updated successfully! 🥂' });
             fetchBillingData();
-            // Optional: Refresh page to clear hard locks if any
-            setTimeout(() => window.location.reload(), 2000);
+            setTimeout(() => window.location.reload(), 1500);
           } else if (statusRes.data.payment_status === 'failed') {
             setIsVerifying(false);
             setMessage({ type: 'error', text: 'M-Pesa payment failed or was cancelled.' });
           } else {
-            // Keep polling every 3 seconds
+            attempts++;
             setTimeout(checkStatus, 3000);
           }
         } catch (e) {
-          setIsVerifying(false);
-          setMessage({ type: 'error', text: 'Error checking payment status.' });
+          // Record not in DB yet, try again silently
+          attempts++;
+          setTimeout(checkStatus, 3000);
         }
       };
 
-      checkStatus();
+      // Initial delay of 2 seconds before first poll to allow DB write
+      setTimeout(checkStatus, 2000);
     } catch (err) {
       setMessage({ type: 'error', text: err.response?.data?.error || 'Payment initiation failed.' });
       setActionLoading(false);
