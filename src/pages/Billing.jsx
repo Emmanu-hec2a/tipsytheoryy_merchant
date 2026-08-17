@@ -155,6 +155,7 @@ const Billing = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [paymentModal, setPaymentModal] = useState({ isOpen: false, plan: '', price: '' });
+  const [showDowngradeModal, setShowDowngradeModal] = useState(false);
 
   useEffect(() => {
     fetchBillingData();
@@ -177,6 +178,10 @@ const Billing = () => {
   };
 
   const openPaymentFlow = (plan) => {
+    if (plan === 'free') {
+      setShowDowngradeModal(true);
+      return;
+    }
     let price = '3,000';
     if (plan === 'pro') price = '5,000';
     else if ((plan === 'enterprise' || plan === 'custom') && store?.plan_price) {
@@ -235,6 +240,21 @@ const Billing = () => {
     }
   };
 
+  const handleDowngrade = async () => {
+    setActionLoading(true);
+    try {
+      await partner.downgradeToFree();
+      setShowDowngradeModal(false);
+      setMessage({ type: 'success', text: 'Switched to Free Tier. Note: Commission is now 10%.' });
+      fetchBillingData();
+      setTimeout(() => window.location.reload(), 2000);
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Downgrade failed. Please try again later.' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   if (loading) return <BillingSkeleton />;
 
   const formatPrice = (price) => {
@@ -277,6 +297,43 @@ const Billing = () => {
                 Cancel Waiting
               </button>
            </div>
+        </div>
+      )}
+
+      {/* 🛡️ Downgrade Warning Modal */}
+      {showDowngradeModal && (
+        <div className="fixed inset-0 z-[200] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6">
+          <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-[2.5rem] p-10 text-center shadow-2xl space-y-8 animate-in zoom-in-95 duration-200">
+             <div className="w-20 h-20 bg-orange-50 dark:bg-orange-900/20 text-orange-500 rounded-3xl flex items-center justify-center mx-auto">
+                <AlertTriangle size={40} />
+             </div>
+             <div className="space-y-3">
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Confirm Downgrade</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+                   Switching to the <strong>Free Tier</strong> will:
+                </p>
+                <div className="text-left bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl space-y-2">
+                   <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300">• Increase your commission to 10%</p>
+                   <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300">• Revoke access to Marketing Blasts</p>
+                   <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300">• Remove priority search visibility</p>
+                </div>
+             </div>
+             <div className="flex flex-col gap-3">
+                <button
+                  onClick={handleDowngrade}
+                  disabled={actionLoading}
+                  className="w-full bg-slate-900 dark:bg-primary text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-slate-900/20"
+                >
+                  {actionLoading ? 'Switching...' : 'Yes, Downgrade to Free'}
+                </button>
+                <button
+                  onClick={() => setShowDowngradeModal(false)}
+                  className="w-full py-4 text-slate-400 font-bold uppercase text-[10px] tracking-widest hover:text-slate-600 transition-colors"
+                >
+                  Keep My Plan
+                </button>
+             </div>
+          </div>
         </div>
       )}
 
@@ -367,7 +424,7 @@ const Billing = () => {
            <PlanCard
             plan="free" price="0"
             features={['Order Management', 'Basic Product List', 'Inventory Tracking', '10% Commission Rate']}
-            current={store?.plan === 'free'} isActive={true} onUpgrade={() => {}} loading={false}
+            current={store?.plan === 'free'} isActive={true} onUpgrade={openPaymentFlow} loading={actionLoading}
            />
            <PlanCard
             plan="base" price="3,000"

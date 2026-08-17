@@ -89,6 +89,7 @@ export const partner = {
   updateSettings: (data) => api.patch('partner/settings/', data),
   getBillingHistory: () => cachedGet('partner/billing/history/'),
   paySubscription: (data) => api.post('partner/billing/pay-now/', data),
+  downgradeToFree: () => api.post('partner/billing/downgrade/'),
   sendMarketingBlast: (data) => api.post('partner/marketing/blast/', data),
   getMarketingStats: () => cachedGet('partner/marketing/stats/'),
   getRevenueShare: () => cachedGet('partner/revenue-share/'),
