@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   ShieldCheck, Lock, DollarSign, Calendar,
   History, AlertCircle, ArrowRight, CheckCircle2,
-  X, Loader2, Landmark, PhoneCall
+  X, Loader2, Landmark, PhoneCall, RefreshCw
 } from 'lucide-react';
 import { partner } from '../api';
 
