@@ -498,7 +498,7 @@ const Billing = () => {
                     history.map((item) => (
                        <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-all group">
                           <td className="px-5 py-3.5 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">
-                             {new Date(item.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
+                             {item.created_at ? new Date(item.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '---'}
                           </td>
                           <td className="px-5 py-3.5 text-xs font-extrabold text-slate-900 dark:text-white">KSh {parseFloat(item.amount).toLocaleString()}</td>
                           <td className="px-5 py-3.5 font-mono text-[9px] text-slate-400 dark:text-slate-500 uppercase tracking-widest">{item.mpesa_receipt || '---'}</td>
