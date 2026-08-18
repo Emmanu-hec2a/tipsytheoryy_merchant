@@ -48,6 +48,7 @@ const RevenueSharing = () => {
 
       try {
         const statusRes = await partner.getSubscriptionStatus(checkoutId);
+        console.log("Polling Status:", statusRes.data.payment_status);
         if (statusRes.data.payment_status === 'success') {
           setIsVerifying(false);
           sessionStorage.removeItem('active_revenue_checkout');
