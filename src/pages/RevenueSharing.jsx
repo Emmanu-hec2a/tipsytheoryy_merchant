@@ -22,16 +22,53 @@ const RevenueSharing = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const [payError, setPayError] = useState('');
+  const [activeCheckoutId, setActiveCheckoutId] = useState(null);
 
-  // Auto-fill phone number from store settings
+  // 🛡️ RESILIENCY: Recover polling state on mount if page was refreshed
   useEffect(() => {
-    if (isAuthenticated) {
-      const stats = JSON.parse(localStorage.getItem('dashboard_stats') || '{}');
-      // We don't have the phone directly in dashboard stats usually,
-      // but we can fetch it or use a default if available.
-      // Better yet, let's ensure it's fetched when data loads.
+    const savedCheckout = sessionStorage.getItem('active_revenue_checkout');
+    if (savedCheckout && !isVerifying) {
+      setActiveCheckoutId(savedCheckout);
+      setIsVerifying(true);
+      startPolling(savedCheckout);
     }
-  }, [isAuthenticated]);
+  }, []);
+
+  const startPolling = (checkoutId) => {
+    let attempts = 0;
+    const MAX_ATTEMPTS = 40;
+
+    const checkStatus = async () => {
+      if (attempts >= MAX_ATTEMPTS) {
+        setIsVerifying(false);
+        sessionStorage.removeItem('active_revenue_checkout');
+        setPayError('Verification timed out. Check history in a moment.');
+        return;
+      }
+
+      try {
+        const statusRes = await partner.getSubscriptionStatus(checkoutId);
+        if (statusRes.data.payment_status === 'success') {
+          setIsVerifying(false);
+          sessionStorage.removeItem('active_revenue_checkout');
+          fetchData();
+          setTimeout(() => window.location.reload(), 1500);
+        } else if (statusRes.data.payment_status === 'failed') {
+          setIsVerifying(false);
+          sessionStorage.removeItem('active_revenue_checkout');
+          setPayError('Payment failed or cancelled.');
+          setShowPayModal(true);
+        } else {
+          attempts++;
+          setTimeout(checkStatus, 3000);
+        }
+      } catch (e) {
+        attempts++;
+        setTimeout(checkStatus, 3000);
+      }
+    };
+    setTimeout(checkStatus, 2000);
+  };
 
   const handleAuth = async (e) => {
     e.preventDefault();
@@ -78,13 +115,13 @@ const RevenueSharing = () => {
   };
 
   const handleConfirmPayment = async (phoneToUse) => {
-    const phone = phoneToUse || mpesaCode; // Reusing state or passed phone
+    const phone = phoneToUse || mpesaCode;
     if (!phone || phone.length < 10) {
       setPayError('Please enter a valid M-Pesa Phone Number.');
       return;
     }
 
-    setIsVerifying(true);
+    setLoading(true); // 🛡️ UI Idempotency: Lock button
     setPayError('');
     try {
       const res = await partner.payRevenueShare({
@@ -94,55 +131,33 @@ const RevenueSharing = () => {
 
       const checkoutId = res.data.checkout_request_id;
 
-      // Close selection modal to show verification overlay
+      // 🛡️ Persistence: Store in session to survive refreshes
+      sessionStorage.setItem('active_revenue_checkout', checkoutId);
+      setActiveCheckoutId(checkoutId);
+
       setShowPayModal(false);
-
-      // 🛡️ RESILIENCY: Polling with Initial Delay & Max Retries
-      let attempts = 0;
-      const MAX_ATTEMPTS = 40; // ~2 minutes total
-
-      const checkStatus = async () => {
-        if (attempts >= MAX_ATTEMPTS) {
-          setIsVerifying(false);
-          setPayError('Verification timed out. Please check your billing history in a moment.');
-          return;
-        }
-
-        try {
-          const statusRes = await partner.getSubscriptionStatus(checkoutId);
-
-          if (statusRes.data.payment_status === 'success') {
-            setIsVerifying(false);
-            fetchData();
-            setTimeout(() => window.location.reload(), 1500);
-          } else if (statusRes.data.payment_status === 'failed') {
-            setIsVerifying(false);
-            setPayError('Payment failed or cancelled.');
-            setShowPayModal(true);
-          } else {
-            // payment_status is 'pending' or null (not found yet)
-            attempts++;
-            setTimeout(checkStatus, 3000);
-          }
-        } catch (e) {
-          // 🛡️ Silent Fail: If the record isn't in DB yet, backend might return 400/404.
-          // We wait and try again instead of crashing.
-          attempts++;
-          setTimeout(checkStatus, 3000);
-        }
-      };
-
-      // Initial delay of 2 seconds before first poll to allow DB write
-      setTimeout(checkStatus, 2000);
+      setIsVerifying(true);
+      startPolling(checkoutId);
 
     } catch (err) {
-      setPayError(err.response?.data?.error || 'Failed to initiate STK Push.');
-      setIsVerifying(false);
+      // 🛡️ Conflict Recovery: If 409, it means an STK is already out there
+      if (err.response?.status === 409 && err.response?.data?.checkout_request_id) {
+        const existingId = err.response.data.checkout_request_id;
+        sessionStorage.setItem('active_revenue_checkout', existingId);
+        setShowPayModal(false);
+        setIsVerifying(true);
+        startPolling(existingId);
+      } else {
+        setPayError(err.response?.data?.error || 'Failed to initiate STK Push.');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   const cancelVerification = () => {
     setIsVerifying(false);
+    sessionStorage.removeItem('active_revenue_checkout');
     setPayError('');
   };
 

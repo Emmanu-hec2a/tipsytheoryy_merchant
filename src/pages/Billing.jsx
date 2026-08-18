@@ -157,9 +157,51 @@ const Billing = () => {
   const [paymentModal, setPaymentModal] = useState({ isOpen: false, plan: '', price: '' });
   const [showDowngradeModal, setShowDowngradeModal] = useState(false);
 
+  // 🛡️ RESILIENCY: State Persistence for Subscriptions
   useEffect(() => {
+    const savedCheckout = sessionStorage.getItem('active_sub_checkout');
+    if (savedCheckout && !isVerifying) {
+      setIsVerifying(true);
+      startPolling(savedCheckout);
+    }
     fetchBillingData();
   }, []);
+
+  const startPolling = (checkoutId) => {
+    let attempts = 0;
+    const MAX_ATTEMPTS = 40;
+
+    const checkStatus = async () => {
+      if (attempts >= MAX_ATTEMPTS) {
+          setIsVerifying(false);
+          sessionStorage.removeItem('active_sub_checkout');
+          setMessage({ type: 'error', text: 'Verification timed out. Please refresh in a moment.' });
+          return;
+      }
+
+      try {
+        const statusRes = await partner.getSubscriptionStatus(checkoutId);
+        if (statusRes.data.payment_status === 'success') {
+          setIsVerifying(false);
+          sessionStorage.removeItem('active_sub_checkout');
+          setMessage({ type: 'success', text: 'Subscription updated successfully! 🥂' });
+          fetchBillingData();
+          setTimeout(() => window.location.reload(), 1500);
+        } else if (statusRes.data.payment_status === 'failed') {
+          setIsVerifying(false);
+          sessionStorage.removeItem('active_sub_checkout');
+          setMessage({ type: 'error', text: 'M-Pesa payment failed or was cancelled.' });
+        } else {
+          attempts++;
+          setTimeout(checkStatus, 3000);
+        }
+      } catch (e) {
+        attempts++;
+        setTimeout(checkStatus, 3000);
+      }
+    };
+    setTimeout(checkStatus, 2000);
+  };
 
   const fetchBillingData = async () => {
     setLoading(true);
@@ -191,51 +233,28 @@ const Billing = () => {
   };
 
   const handleConfirmPayment = async (phone) => {
-    setActionLoading(true);
+    setActionLoading(true); // 🛡️ Button Lock
     setMessage({ type: '', text: '' });
     try {
       const { data } = await partner.paySubscription({ phone, plan: paymentModal.plan });
       const checkoutId = data.checkout_request_id;
 
+      sessionStorage.setItem('active_sub_checkout', checkoutId);
       setPaymentModal({ isOpen: false, plan: '', price: '' });
       setIsVerifying(true);
+      startPolling(checkoutId);
 
-      // 🛡️ RESILIENCY: Polling with Initial Delay & Silent Fails
-      let attempts = 0;
-      const MAX_ATTEMPTS = 40;
-
-      const checkStatus = async () => {
-        if (attempts >= MAX_ATTEMPTS) {
-            setIsVerifying(false);
-            setMessage({ type: 'error', text: 'Verification timed out. Please refresh in a moment.' });
-            return;
-        }
-
-        try {
-          const statusRes = await partner.getSubscriptionStatus(checkoutId);
-          if (statusRes.data.payment_status === 'success') {
-            setIsVerifying(false);
-            setMessage({ type: 'success', text: 'Subscription updated successfully! 🥂' });
-            fetchBillingData();
-            setTimeout(() => window.location.reload(), 1500);
-          } else if (statusRes.data.payment_status === 'failed') {
-            setIsVerifying(false);
-            setMessage({ type: 'error', text: 'M-Pesa payment failed or was cancelled.' });
-          } else {
-            attempts++;
-            setTimeout(checkStatus, 3000);
-          }
-        } catch (e) {
-          // Record not in DB yet, try again silently
-          attempts++;
-          setTimeout(checkStatus, 3000);
-        }
-      };
-
-      // Initial delay of 2 seconds before first poll to allow DB write
-      setTimeout(checkStatus, 2000);
     } catch (err) {
-      setMessage({ type: 'error', text: err.response?.data?.error || 'Payment initiation failed.' });
+      if (err.response?.status === 409 && err.response?.data?.checkout_request_id) {
+        const existingId = err.response.data.checkout_request_id;
+        sessionStorage.setItem('active_sub_checkout', existingId);
+        setPaymentModal({ isOpen: false, plan: '', price: '' });
+        setIsVerifying(true);
+        startPolling(existingId);
+      } else {
+        setMessage({ type: 'error', text: err.response?.data?.error || 'Payment initiation failed.' });
+      }
+    } finally {
       setActionLoading(false);
     }
   };
